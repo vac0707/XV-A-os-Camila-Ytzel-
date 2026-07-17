@@ -1,0 +1,225 @@
+@import "tailwindcss";
+
+@theme {
+  --font-cursive: "Great Vibes", cursive;
+  --font-bickham: "Bickham Script Pro", "Great Vibes", cursive;
+  --font-cinzel-decorative: "Cinzel Decorative", serif;
+  --font-serif-cinzel: "Cinzel", serif;
+  --font-trajan: "Trajan Pro", "Forum", serif;
+  --font-forum: "Forum", serif;
+  --font-cormorant: "Cormorant Garamond", serif;
+  --font-sans: "Inter", sans-serif;
+
+  /* Custom Greek Mythology Color Palette */
+  --color-marble-white: #F8F8F8;
+  --color-gold-metallic: #D4AF37;
+  --color-navy-deep: #14213D;
+  --color-ivory: #FFF8F0;
+  --color-stone-gray: #D9D9D9;
+
+  --color-celestial-dark: #0a1128;
+  --color-celestial-glow: #0f172a;
+  --color-silver: #cbd5e1;
+  --color-silver-bright: #f8fafc;
+  --color-accent: #e2e8f0;
+
+  @keyframes twinkle {
+    0%, 100% { opacity: 0.35; transform: scale(0.9); }
+    50% { opacity: 1; transform: scale(1.15); }
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    50% { transform: translateY(-12px) rotate(2deg); }
+  }
+
+  @keyframes float-cloud-left {
+    0%, 100% { transform: translateX(0px) translateY(0px); }
+    50% { transform: translateX(-15px) translateY(5px); }
+  }
+
+  @keyframes float-cloud-right {
+    0%, 100% { transform: translateX(0px) translateY(0px); }
+    50% { transform: translateX(15px) translateY(-5px); }
+  }
+
+  @keyframes shine {
+    0% { background-position: -200% center; }
+    100% { background-position: 200% center; }
+  }
+
+  @keyframes gold-sparkle {
+    0%, 100% { opacity: 0.2; transform: scale(0.8) translateY(0); }
+    50% { opacity: 0.8; transform: scale(1.2) translateY(-10px); }
+  }
+}
+
+@layer base {
+  body {
+    background-color: var(--color-navy-deep);
+    color: var(--color-ivory);
+    overflow-x: hidden;
+    font-family: var(--font-sans);
+    margin: 0;
+  }
+}
+
+@layer components {
+  /* Text styles */
+  .text-shine-gold {
+    background: linear-gradient(
+      to right,
+      #B8860B 0%,
+      #E6C229 25%,
+      #FFF099 50%,
+      #E6C229 75%,
+      #B8860B 100%
+    );
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: shine 6s linear infinite;
+  }
+
+  .text-shine-silver {
+    background: linear-gradient(
+      to right,
+      #9ca3af 20%,
+      #f3f4f6 40%,
+      #f3f4f6 60%,
+      #9ca3af 80%
+    );
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: shine 5s linear infinite;
+  }
+
+  /* Marble plaque effects */
+  .marble-plaque {
+    background: linear-gradient(135deg, #ffffff 0%, #f4f4f4 50%, #eaeaea 100%);
+    box-shadow: 
+      inset 0 1px 0 rgba(255, 255, 255, 0.8),
+      0 10px 30px rgba(0, 0, 0, 0.25),
+      0 1px 3px rgba(0, 0, 0, 0.1);
+    border: 2px solid #D4AF37;
+    position: relative;
+    border-radius: 8px;
+  }
+
+  .marble-plaque::before {
+    content: '';
+    position: absolute;
+    inset: 3px;
+    border: 1px solid rgba(212, 175, 55, 0.4);
+    pointer-events: none;
+    border-radius: 6px;
+  }
+
+  .dark-marble-plaque {
+    background: linear-gradient(135deg, #101a30 0%, #0d1527 50%, #070c17 100%);
+    box-shadow: 
+      inset 0 1px 0 rgba(255, 255, 255, 0.1),
+      0 15px 35px rgba(0, 0, 0, 0.4),
+      0 2px 5px rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(212, 175, 55, 0.35);
+    position: relative;
+    border-radius: 8px;
+  }
+
+  .dark-marble-plaque::before {
+    content: '';
+    position: absolute;
+    inset: 4px;
+    border: 1px solid rgba(212, 175, 55, 0.15);
+    pointer-events: none;
+    border-radius: 5px;
+  }
+
+  /* Golden key border (Meander) class */
+  .greek-key-border {
+    border: 8px solid transparent;
+    border-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M0 0h12v12H0zm2 2v8h8V2zm2 2h4v4H4zm1 1v2h2V5z' fill='none' stroke='%23D4AF37' stroke-width='1.5'/%3E%3C/svg%3E") 8 repeat;
+  }
+
+  /* Photo Frame Inspired by Temple architecture */
+  .temple-photo-frame {
+    border: 16px solid #F8F8F8;
+    outline: 2px solid #D4AF37;
+    box-shadow: 
+      0 30px 60px rgba(0, 0, 0, 0.5),
+      inset 0 0 20px rgba(0,0,0,0.15);
+    position: relative;
+  }
+
+  .temple-photo-frame::after {
+    content: '';
+    position: absolute;
+    inset: -14px;
+    border: 1px solid rgba(212, 175, 55, 0.6);
+    pointer-events: none;
+  }
+
+  /* Clouds floats */
+  .cloud-float-left {
+    animation: float-cloud-left 8s ease-in-out infinite;
+  }
+
+  .cloud-float-right {
+    animation: float-cloud-right 9s ease-in-out infinite;
+  }
+}
+
+/* Star styles */
+.star {
+  position: absolute;
+  background: white;
+  border-radius: 50%;
+  animation: twinkle var(--duration, 3s) ease-in-out infinite;
+  opacity: 0.3;
+}
+
+.gold-dust {
+  position: absolute;
+  background: radial-gradient(circle, #FFF099 0%, rgba(212, 175, 55, 0) 70%);
+  border-radius: 50%;
+  pointer-events: none;
+  animation: gold-sparkle var(--duration, 5s) ease-in-out infinite;
+}
+
+/* Custom Scrollbar for Luxury layout */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #080d19;
+}
+::-webkit-scrollbar-thumb {
+  background: #D4AF37;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #FFF099;
+}
+
+/* Background Veins pattern for marble effect */
+.bg-marble-veins {
+  background-color: #F8F8F8;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cpath d='M0 20 Q 30 25, 50 10 T 100 30 M100 60 Q 70 80, 40 70 T 0 90' fill='none' stroke='rgba(0,0,0,0.03)' stroke-width='1.5'/%3E%3Cpath d='M20 0 Q 35 40, 10 60 T 40 100' fill='none' stroke='rgba(212,175,55,0.02)' stroke-width='1'/%3E%3C/svg%3E");
+}
+
+.bg-dark-constellations {
+  background-color: #14213D;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150' viewBox='0 0 150 150'%3E%3Ccircle cx='10' cy='30' r='1' fill='rgba(255,255,255,0.2)'/%3E%3Ccircle cx='70' cy='15' r='1.5' fill='rgba(255,255,255,0.3)'/%3E%3Ccircle cx='120' cy='60' r='1' fill='rgba(255,255,255,0.2)'/%3E%3Ccircle cx='40' cy='90' r='1' fill='rgba(255,255,255,0.15)'/%3E%3Ccircle cx='100' cy='110' r='1.5' fill='rgba(255,255,255,0.35)'/%3E%3Ccircle cx='140' cy='130' r='1' fill='rgba(255,255,255,0.2)'/%3E%3Cpath d='M10 30 L70 15 M70 15 L120 60 M40 90 L100 110 M100 110 L140 130' fill='none' stroke='rgba(255,255,255,0.04)' stroke-width='0.5'/%3E%3C/svg%3E");
+}
+
+.bg-olympus-sky {
+  background: radial-gradient(circle at 50% 15%, #24355a 0%, #0f182e 45%, #070c17 100%);
+}
+
+/* Greek Key repeating meander pattern helper for CSS bars */
+.greek-key-bar {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='12' viewBox='0 0 24 12'%3E%3Cpath d='M0 11h6V2h10v7h-4V5h2V3H8v7h6V4h10v8H14v2' fill='none' stroke='%23D4AF37' stroke-width='1.5'/%3E%3C/svg%3E");
+  background-repeat: repeat-x;
+  background-size: auto 100%;
+}

@@ -1,0 +1,6 @@
+{
+  "name": "Remix: Keily Fernanda - Mis 15 Años",
+  "description": "Invitación virtual interactiva para los XV Años de Camila Ytzel Figueroa Zapata. Una experiencia mágica inspirada en el Monte Olimpo.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
