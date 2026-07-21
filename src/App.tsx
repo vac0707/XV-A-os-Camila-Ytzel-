@@ -29,6 +29,7 @@ import { Guestbook } from './components/Guestbook';
 import { RsvpSection } from './components/RsvpSection';
 import { CollaborativeGallery } from './components/CollaborativeGallery';
 import { CreatorCard } from './components/CreatorCard';
+import { ShareSection } from './components/ShareSection';
 import { GreekPillars, CelestialClouds, GrecianDivider, GoldDustOverlay } from './components/GreekDecorations';
 import { 
   GoldGradients, 
@@ -768,6 +769,9 @@ export default function App() {
                 <div className="h-0.5 w-16 bg-gradient-to-l from-transparent to-gold-metallic/40" />
               </div>
             </motion.div>
+
+            {/* Share Invitation Section */}
+            <ShareSection />
 
             {/* Premium Translucent Creator Card (VAC Creativo) */}
             <div className="pt-6 relative z-10">
