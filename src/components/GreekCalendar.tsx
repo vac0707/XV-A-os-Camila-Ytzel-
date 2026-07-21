@@ -270,7 +270,7 @@ export const GreekCalendar: React.FC = () => {
                   HOY ES 17 DE JULIO, 2026
                 </p>
                 <p className="font-cormorant text-sm italic font-semibold text-ivory/70 mt-1">
-                  Falta exactamente menos de un mes para la consagración de la fiesta celestial de Camila Ytzel.
+                  Falta exactamente menos de un mes para la consagración de la fiesta celestial de Ytzel.
                 </p>
               </motion.div>
             ) : selectedDay ? (

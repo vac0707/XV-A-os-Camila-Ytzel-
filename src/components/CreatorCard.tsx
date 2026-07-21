@@ -39,7 +39,7 @@ export const CreatorCard = () => {
           <motion.a
             whileHover={{ scale: 1.15, y: -2 }}
             whileTap={{ scale: 0.9 }}
-            href="https://wa.me/51932350348?text=Hola%20VAC%20Creativo%2C%20vi%20la%20invitaci%C3%B3n%20virtual%20de%20Camila%20Ytzel%20y%20me%20encant%C3%B3.%20Quisiera%20m%C3%A1s%20informaci%C3%B3n%20sobre%20tus%20dise%C3%B1os%20de%20invitaciones."
+            href="https://wa.me/51932350348?text=Hola%20VAC%20Creativo%2C%20vi%20la%20invitaci%C3%B3n%20virtual%20de%20Ytzel%20y%20me%20encant%C3%B3.%20Quisiera%20m%C3%A1s%20informaci%C3%B3n%20sobre%20tus%20dise%C3%B1os%20de%20invitaciones."
             target="_blank"
             rel="noreferrer"
             className="w-11 h-11 rounded-full bg-navy-deep border border-gold-metallic/35 flex items-center justify-center text-gold-metallic hover:text-white hover:bg-gold-metallic hover:shadow-[0_0_15px_rgba(212,175,55,0.4)] transition-all cursor-pointer"

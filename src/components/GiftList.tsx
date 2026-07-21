@@ -10,10 +10,10 @@ export const GiftList = () => {
       <div className="text-center space-y-4">
         <div className="flex flex-col items-center">
           <GrecianDivider />
-          <h2 className="font-cinzel-decorative text-3xl md:text-5xl text-ivory tracking-wider uppercase text-shine-gold font-bold">
-            Mesa de Regalos
+          <h2 className="font-cinzel-decorative text-3xl md:text-5xl text-navy-deep tracking-wider uppercase text-shine-gold font-bold">
+            Mesa de Detalles
           </h2>
-          <p className="font-cormorant italic text-base md:text-lg text-ivory/80 max-w-xl mx-auto mt-4 font-semibold leading-relaxed">
+          <p className="font-cormorant italic text-base md:text-lg text-navy-deep/80 max-w-xl mx-auto mt-4 font-semibold leading-relaxed">
             {GIFT_PHRASE}
           </p>
         </div>

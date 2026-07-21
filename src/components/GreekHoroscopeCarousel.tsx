@@ -28,7 +28,7 @@ const GREEK_GALLERY_ITEMS: GalleryItem[] = [
     title: "La Sabiduría de Atenea",
     constellation: "Pegasus (El Pegaso)",
     god: "Atenea",
-    meaning: "Guía el intelecto, el valor y el sendero brillante que Camila Ytzel recorrerá en su juventud con elegancia y virtud.",
+    meaning: "Guía el intelecto, el valor y el sendero brillante que Ytzel recorrerá en su juventud con elegancia y virtud.",
     starSign: "Leo",
     zodiacSymbol: "♌"
   },

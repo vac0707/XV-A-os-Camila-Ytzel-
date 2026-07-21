@@ -16,7 +16,7 @@ export const Guestbook = () => {
     {
       id: "1",
       name: "Tía Nery Sobrevilla (Madrina)",
-      comment: "¡Felicidades mi hermosa Camila Ytzel! Que esta nueva etapa de tu juventud esté siempre iluminada por los dioses, bendecida con mucha salud y llena de hermosas sonrisas. Te amamos muchísimo.",
+      comment: "¡Felicidades mi hermosa Ytzel! Que esta nueva etapa de tu juventud esté siempre iluminada por los dioses, bendecida con mucha salud y llena de hermosas sonrisas. Te amamos muchísimo.",
       date: "2026-07-16"
     },
     {
@@ -28,7 +28,7 @@ export const Guestbook = () => {
   ];
 
   useEffect(() => {
-    const saved = localStorage.getItem("camila_ytzel_quince_guestbook");
+    const saved = localStorage.getItem("ytzel_quince_guestbook");
     if (saved) {
       try {
         setComments(JSON.parse(saved));
@@ -37,7 +37,7 @@ export const Guestbook = () => {
       }
     } else {
       setComments(initialWishes);
-      localStorage.setItem("camila_ytzel_quince_guestbook", JSON.stringify(initialWishes));
+      localStorage.setItem("ytzel_quince_guestbook", JSON.stringify(initialWishes));
     }
   }, []);
 
@@ -65,7 +65,7 @@ export const Guestbook = () => {
 
     const updated = [newComment, ...comments];
     setComments(updated);
-    localStorage.setItem("camila_ytzel_quince_guestbook", JSON.stringify(updated));
+    localStorage.setItem("ytzel_quince_guestbook", JSON.stringify(updated));
 
     setName("");
     setCommentText("");
@@ -85,7 +85,7 @@ export const Guestbook = () => {
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.setAttribute("href", url);
-    link.setAttribute("download", "libro_de_visitas_camila_ytzel.csv");
+    link.setAttribute("download", "libro_de_visitas_ytzel.csv");
     link.style.visibility = "hidden";
     document.body.appendChild(link);
     link.click();
@@ -97,7 +97,7 @@ export const Guestbook = () => {
     let doc = "";
     doc += "========================================================================\n";
     doc += "                  EL PERGAMINO DE LOS BUENOS DESEOS                     \n";
-    doc += "             XV AÑOS CELESTIALES DE CAMILA YTZEL FIGUEROA               \n";
+    doc += "             XV AÑOS CELESTIALES DE YTZEL FIGUEROA               \n";
     doc += "========================================================================\n\n";
     doc += `Generado el: ${new Date().toLocaleDateString('es-PE')}\n`;
     doc += `Total de mensajes recopilados: ${comments.length}\n\n`;
@@ -116,7 +116,7 @@ export const Guestbook = () => {
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.setAttribute("href", url);
-    link.setAttribute("download", "pergamino_de_recuerdos_camila_ytzel.txt");
+    link.setAttribute("download", "pergamino_de_recuerdos_ytzel.txt");
     link.style.visibility = "hidden";
     document.body.appendChild(link);
     link.click();
@@ -128,7 +128,7 @@ export const Guestbook = () => {
       <div className="text-center space-y-4">
         <div className="flex flex-col items-center">
           <GrecianDivider />
-          <h2 className="font-cinzel-decorative text-4xl md:text-5xl text-ivory text-shine-gold pb-2">
+          <h2 className="font-cinzel-decorative text-4xl md:text-5xl text-navy-deep text-shine-gold pb-2">
             Libro de Visitas
           </h2>
           <p className="font-trajan text-xs tracking-[0.4em] text-gold-metallic uppercase font-bold">
@@ -174,7 +174,7 @@ export const Guestbook = () => {
                 rows={4}
                 value={commentText}
                 onChange={(e) => setCommentText(e.target.value)}
-                placeholder="¡Felicidades en tus quince, Camila Ytzel!..."
+                placeholder="¡Felicidades en tus quince, Ytzel!..."
                 className="w-full bg-navy-deep border border-gold-metallic/20 px-3 py-2 text-ivory text-xs rounded-sm focus:outline-none focus:border-gold-metallic/60 transition-colors resize-none placeholder:text-slate-500 font-cormorant font-semibold text-sm"
                 maxLength={180}
               />
@@ -201,7 +201,7 @@ export const Guestbook = () => {
         {/* Scrollable list of comments */}
         <div className="lg:col-span-7 space-y-4 max-h-[480px] overflow-y-auto pr-2">
           {comments.length === 0 ? (
-            <div className="text-center py-12 text-ivory/55 font-cormorant italic text-lg">
+            <div className="text-center py-12 text-navy-deep/55 font-cormorant italic text-lg">
               Aún no hay mensajes. ¡Sé el primero en firmar el libro de visitas!
             </div>
           ) : (
@@ -219,11 +219,11 @@ export const Guestbook = () => {
                     <span className="font-trajan font-bold text-sm text-gold-metallic tracking-wider">
                       {item.name}
                     </span>
-                    <span className="font-serif-cinzel text-[10px] font-bold text-ivory/50">
+                    <span className="font-serif-cinzel text-[10px] font-bold text-navy-deep/60">
                       {item.date}
                     </span>
                   </div>
-                  <p className="font-cormorant italic text-ivory/90 text-base leading-relaxed font-semibold">
+                  <p className="font-cormorant italic text-navy-deep/90 text-base leading-relaxed font-semibold">
                     &ldquo;{item.comment}&rdquo;
                   </p>
                 </motion.div>
@@ -245,7 +245,7 @@ export const Guestbook = () => {
           <h3 className="font-trajan text-[11px] tracking-[0.3em] text-gold-metallic uppercase font-bold">
             Administración del Templo
           </h3>
-          <p className="font-cormorant italic text-base md:text-lg text-ivory/80 font-semibold leading-relaxed">
+          <p className="font-cormorant italic text-base md:text-lg text-navy-deep/80 font-semibold leading-relaxed">
             Al finalizar el evento, puedes descargar todos los hermosos deseos recopilados en tu libro de visitas para conservarlos por siempre en tus hojas de cálculo o documentos.
           </p>
         </div>
@@ -256,7 +256,7 @@ export const Guestbook = () => {
             disabled={comments.length === 0}
             className={`w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-sm font-trajan text-[10px] tracking-widest font-bold border cursor-pointer select-none transition-all duration-300 ${
               comments.length === 0
-                ? "border-ivory/10 text-ivory/35 bg-white/5 cursor-not-allowed opacity-40"
+                ? "border-navy-deep/15 text-navy-deep/35 bg-black/5 cursor-not-allowed opacity-40"
                 : "border-gold-metallic/35 text-gold-metallic bg-navy-deep/40 hover:bg-gold-metallic hover:text-navy-deep hover:shadow-[0_0_20px_rgba(212,175,55,0.25)] hover:scale-[1.02] active:scale-95"
             }`}
           >
@@ -269,7 +269,7 @@ export const Guestbook = () => {
             disabled={comments.length === 0}
             className={`w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-sm font-trajan text-[10px] tracking-widest font-bold border cursor-pointer select-none transition-all duration-300 ${
               comments.length === 0
-                ? "border-ivory/10 text-ivory/35 bg-white/5 cursor-not-allowed opacity-40"
+                ? "border-navy-deep/15 text-navy-deep/35 bg-black/5 cursor-not-allowed opacity-40"
                 : "border-gold-metallic/35 text-gold-metallic bg-navy-deep/40 hover:bg-gold-metallic hover:text-navy-deep hover:shadow-[0_0_20px_rgba(212,175,55,0.25)] hover:scale-[1.02] active:scale-95"
             }`}
           >

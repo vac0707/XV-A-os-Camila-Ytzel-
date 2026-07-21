@@ -1,12 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
-  Camera, Upload, X, Check, Image as ImageIcon, Video, FolderHeart, 
-  ChevronLeft, ChevronRight, User, HelpCircle, Copy, AlertCircle, Sparkles, Sliders
+  Camera, Upload, X, Check, Image as ImageIcon, Video, 
+  User, HelpCircle, Copy, AlertCircle, Sparkles, Sliders,
+  QrCode, Download, Link
 } from 'lucide-react';
+import QRCode from 'qrcode';
 import { GrecianDivider } from './GreekDecorations';
 import { 
-  APPS_SCRIPT_URL, DRIVE_ROOT_FOLDER_ID, GALLERY_CATEGORIES, GALLERY_IMAGES, COVER_IMAGE 
+  APPS_SCRIPT_URL, DRIVE_ROOT_FOLDER_ID, GALLERY_CATEGORIES, GALLERY_IMAGES, COVER_IMAGE,
+  QUINCE_NAME_FIRST, EVENT_TITLE
 } from '../data/eventData';
 
 interface GalleryItem {
@@ -23,11 +26,11 @@ interface GalleryItem {
 const PLACEHOLDER_ITEMS: GalleryItem[] = [
   {
     id: 'placeholder-1',
-    name: 'Sesión de Fotos Camila Ytzel 1.jpg',
+    name: 'Sesión de Fotos Ytzel 1.jpg',
     mimeType: 'image/jpeg',
     url: GALLERY_IMAGES[0] || COVER_IMAGE,
     category: 'official',
-    uploader: 'Camila Ytzel',
+    uploader: 'Ytzel',
     created: Date.now() - 3600000 * 24
   },
   {
@@ -86,8 +89,7 @@ const PLACEHOLDER_ITEMS: GalleryItem[] = [
   }
 ];
 
-export const CollaborativeGallery = () => {
-  const [activeCategory, setActiveCategory] = useState<string>('all');
+export const CollaborativeGallery = ({ isStandalone = false }: { isStandalone?: boolean }) => {
   const [items, setItems] = useState<GalleryItem[]>(PLACEHOLDER_ITEMS);
   const [isUploading, setIsUploading] = useState<boolean>(false);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
@@ -95,6 +97,78 @@ export const CollaborativeGallery = () => {
   const [apiError, setApiError] = useState<string | null>(null);
   const [isApiActive, setIsApiActive] = useState<boolean>(false);
   const [copiedScript, setCopiedScript] = useState<boolean>(false);
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const autoCloseTimeoutRef = useRef<any>(null);
+
+  // QR Code & Standalone States
+  const [galleryUrl, setGalleryUrl] = useState<string>('');
+  const [qrCodeUrl, setQrCodeUrl] = useState<string>('');
+  const [qrCodeSvg, setQrCodeSvg] = useState<string>('');
+  const [copiedLink, setCopiedLink] = useState<boolean>(false);
+
+  // Generate URL & QR Code on mount
+  useEffect(() => {
+    const url = `${window.location.origin}${window.location.pathname}?view=galeria`;
+    setGalleryUrl(url);
+
+    const generateQr = async () => {
+      try {
+        const pngDataUrl = await QRCode.toDataURL(url, {
+          width: 1024,
+          margin: 2,
+          color: {
+            dark: '#030d22',  // navy-deep
+            light: '#fcfaf2' // ivory
+          }
+        });
+        setQrCodeUrl(pngDataUrl);
+
+        const svgString = await QRCode.toString(url, {
+          type: 'svg',
+          margin: 2,
+          color: {
+            dark: '#030d22',
+            light: '#fcfaf2'
+          }
+        });
+        setQrCodeSvg(svgString);
+      } catch (err) {
+        console.error('Failed to generate QR Code:', err);
+      }
+    };
+
+    generateQr();
+  }, []);
+
+  const downloadQrPng = () => {
+    if (!qrCodeUrl) return;
+    const link = document.createElement('a');
+    link.href = qrCodeUrl;
+    link.download = `QR_Galeria_${QUINCE_NAME_FIRST.replace(/\s+/g, '_')}.png`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const downloadQrSvg = () => {
+    if (!qrCodeSvg) return;
+    const blob = new Blob([qrCodeSvg], { type: 'image/svg+xml;charset=utf-8' });
+    const blobUrl = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = blobUrl;
+    link.download = `QR_Galeria_${QUINCE_NAME_FIRST.replace(/\s+/g, '_')}.svg`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(blobUrl);
+  };
+
+  const copyGalleryLink = () => {
+    navigator.clipboard.writeText(galleryUrl);
+    setCopiedLink(true);
+    setTimeout(() => setCopiedLink(false), 2000);
+  };
 
   // Upload Form State
   const [guestName, setGuestName] = useState<string>('');
@@ -104,11 +178,24 @@ export const CollaborativeGallery = () => {
   const [uploadStatus, setUploadStatus] = useState<'idle' | 'uploading' | 'success' | 'error'>('idle');
   const [uploadErrorMessage, setUploadErrorMessage] = useState<string>('');
 
-  // Lightbox State
-  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
-
   // Drag and Drop State
   const [isDragActive, setIsDragActive] = useState<boolean>(false);
+
+  // Clean up and reset states when modal closes
+  useEffect(() => {
+    if (!isModalOpen) {
+      setUploadStatus('idle');
+      setSelectedFiles([]);
+      setUploadProgress(0);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+      if (autoCloseTimeoutRef.current) {
+        clearTimeout(autoCloseTimeoutRef.current);
+        autoCloseTimeoutRef.current = null;
+      }
+    }
+  }, [isModalOpen]);
 
   // Fetch items from Google Apps Script Web App
   const fetchGalleryItems = async () => {
@@ -142,23 +229,20 @@ export const CollaborativeGallery = () => {
         console.warn('Apps Script response unsuccessful:', result);
       }
     } catch (err) {
-      console.error('Error fetching collaborative gallery items:', err);
+      // Degrade to console.warn to prevent platform/browser intrusive error overlays for fetch failures
+      console.warn('Error fetching collaborative gallery items (expected in sandbox):', err);
       // Fallback gracefully without breaking UI, as this is standard in development preview
     }
   };
 
   useEffect(() => {
-    fetchGalleryItems();
+    if (isStandalone) {
+      fetchGalleryItems();
+    }
     if (APPS_SCRIPT_URL) {
       setIsApiActive(true);
     }
-  }, []);
-
-  // Filter items based on active category tab
-  const filteredItems = items.filter(item => {
-    if (activeCategory === 'all') return true;
-    return item.category === activeCategory;
-  });
+  }, [isStandalone]);
 
   // Handle Drag Events
   const handleDrag = (e: React.DragEvent) => {
@@ -239,13 +323,14 @@ export const CollaborativeGallery = () => {
     setUploadProgress(10);
 
     const filesUploadedSuccessfully: GalleryItem[] = [];
+    const filesToUpload = [...selectedFiles];
 
     try {
       const uploaderName = guestName.trim() || 'Invitado';
 
-      for (let i = 0; i < selectedFiles.length; i++) {
-        const file = selectedFiles[i];
-        const progressPerFile = 100 / selectedFiles.length;
+      for (let i = 0; i < filesToUpload.length; i++) {
+        const file = filesToUpload[i];
+        const progressPerFile = 100 / filesToUpload.length;
         setUploadProgress(Math.min(90, Math.round(10 + i * progressPerFile)));
 
         const { base64, mimeType } = await readFileAsBase64(file);
@@ -280,6 +365,8 @@ export const CollaborativeGallery = () => {
               uploader: uploaderName,
               created: Date.now()
             });
+            // Remove from list of selected files as soon as it uploads successfully
+            setSelectedFiles(prev => prev.filter(f => f !== file));
           } else {
             throw new Error(result.message || 'Error en la respuesta del Apps Script.');
           }
@@ -298,6 +385,8 @@ export const CollaborativeGallery = () => {
             uploader: uploaderName,
             created: Date.now()
           });
+          // Remove from list of selected files as soon as it uploads successfully
+          setSelectedFiles(prev => prev.filter(f => f !== file));
         }
       }
 
@@ -306,9 +395,20 @@ export const CollaborativeGallery = () => {
       setUploadProgress(100);
       setUploadStatus('success');
       
-      // Reset files & uploader name
+      // Reset files & uploader name & file input element
       setSelectedFiles([]);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
       setGuestName('');
+
+      // Auto close/minimize the modal window after 4 seconds
+      if (autoCloseTimeoutRef.current) {
+        clearTimeout(autoCloseTimeoutRef.current);
+      }
+      autoCloseTimeoutRef.current = setTimeout(() => {
+        setIsModalOpen(false);
+      }, 4000);
 
       // Refresh real API gallery items in the background if possible
       if (APPS_SCRIPT_URL) {
@@ -322,16 +422,6 @@ export const CollaborativeGallery = () => {
     }
   };
 
-  const nextLightboxItem = () => {
-    if (lightboxIndex === null) return;
-    setLightboxIndex((lightboxIndex + 1) % filteredItems.length);
-  };
-
-  const prevLightboxItem = () => {
-    if (lightboxIndex === null) return;
-    setLightboxIndex((lightboxIndex - 1 + filteredItems.length) % filteredItems.length);
-  };
-
   const copyAppsScriptCode = () => {
     const code = getAppsScriptCode();
     navigator.clipboard.writeText(code);
@@ -340,7 +430,7 @@ export const CollaborativeGallery = () => {
   };
 
   const getAppsScriptCode = () => {
-    return `// ====== GOOGLE APPS SCRIPT: INVITACIÓN PREMIUM CAMILA YTZEL ======
+    return `// ====== GOOGLE APPS SCRIPT: INVITACIÓN PREMIUM YTZEL ======
 // DEPLOY INSTRUCTIONS:
 // 1. Ve a script.google.com y crea un nuevo proyecto.
 // 2. Reemplaza todo el código con este script.
@@ -483,7 +573,7 @@ function doPost(e) {
       <section id="upload-memories-section" className="px-6 max-w-4xl mx-auto relative">
         <div className="text-center space-y-4 flex flex-col items-center">
           <GrecianDivider />
-          <h2 className="font-cinzel-decorative text-3xl md:text-5xl text-ivory tracking-wider uppercase text-shine-gold font-bold">
+          <h2 className="font-cinzel-decorative text-3xl md:text-5xl text-navy-deep tracking-wider uppercase text-shine-gold font-bold">
             Comparte tus Recuerdos
           </h2>
           <p className="font-trajan text-xs tracking-[0.4em] text-gold-metallic uppercase font-semibold">
@@ -491,189 +581,148 @@ function doPost(e) {
           </p>
         </div>
 
-        <div className="mt-12">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
-            className="marble-plaque max-w-2xl mx-auto p-8 md:p-12 relative shadow-2xl border border-gold-metallic/35 bg-gradient-to-b from-navy-deep/95 via-navy-deep/90 to-black/95 text-center space-y-8"
-          >
-            {/* Ancient Greek border and meanders */}
-            <div className="absolute inset-2 border-2 border-gold-metallic/20 pointer-events-none rounded-sm" />
-            
-            {/* Greek Key-like corner designs */}
-            <div className="absolute top-4 left-4 w-6 h-6 border-t-2 border-l-2 border-gold-metallic/40" />
-            <div className="absolute top-4 right-4 w-6 h-6 border-t-2 border-r-2 border-gold-metallic/40" />
-            <div className="absolute bottom-4 left-4 w-6 h-6 border-b-2 border-l-2 border-gold-metallic/40" />
-            <div className="absolute bottom-4 right-4 w-6 h-6 border-b-2 border-r-2 border-gold-metallic/40" />
-
-            {/* Glowing Icon Wrapper */}
-            <div className="relative flex justify-center">
-              <div className="absolute -inset-4 bg-gold-metallic/10 rounded-full blur-xl animate-pulse" />
-              <div className="w-20 h-20 flex items-center justify-center rounded-full border-2 border-gold-metallic bg-navy-deep text-gold-metallic shadow-[0_0_25px_rgba(212,175,55,0.35)] relative z-10">
-                <Camera className="w-10 h-10 animate-pulse" />
-              </div>
-            </div>
-
-            <div className="space-y-4 max-w-md mx-auto">
-              <h3 className="font-cinzel-decorative text-xl md:text-2xl text-gold-metallic tracking-widest font-bold">
-                ÁLBUM COLABORATIVO
-              </h3>
-              
-              <p className="font-cormorant text-lg text-slate-700 leading-relaxed font-semibold">
-                ¡Quiero guardar cada instante de esta noche mágica! Sube tus mejores fotos y videos directamente desde tu celular. Se organizarán automáticamente en las carpetas de Google Drive de mi álbum familiar.
-              </p>
-            </div>
-
-            <div className="pt-2 flex flex-col items-center gap-4">
-              <button
-                onClick={() => {
-                  setUploadStatus('idle');
-                  setIsModalOpen(true);
-                }}
-                className="inline-flex items-center justify-center gap-3 px-8 py-4 bg-gradient-to-r from-gold-metallic/80 via-gold-metallic to-gold-metallic/80 text-navy-deep hover:text-navy-deep font-trajan text-xs tracking-[0.2em] font-bold rounded-full border-2 border-ivory shadow-[0_4px_20px_rgba(212,175,55,0.35)] hover:shadow-[0_4px_25px_rgba(212,175,55,0.55)] hover:scale-105 transition-all duration-300 transform active:scale-95 cursor-pointer select-none group"
+        <div className="flex flex-col items-center justify-center mt-12 max-w-5xl mx-auto w-full">
+          {!isStandalone ? (
+            /* Only show QR Code Panel on the main invitation page, centered */
+            <div className="w-full max-w-md mx-auto">
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.8 }}
+                className="marble-plaque p-8 relative shadow-2xl border border-gold-metallic/35 bg-gradient-to-b from-navy-deep/95 via-navy-deep/90 to-black/95 text-center space-y-6 flex flex-col items-center justify-between min-h-[480px]"
               >
-                <Upload className="w-5 h-5 text-navy-deep group-hover:bounce" />
-                <span>COMPARTIR MIS RECUERDOS</span>
-              </button>
+                {/* Ancient Greek border and meanders */}
+                <div className="absolute inset-2 border-2 border-gold-metallic/20 pointer-events-none rounded-sm" />
+                
+                {/* Greek Key-like corner designs */}
+                <div className="absolute top-4 left-4 w-4 h-4 border-t-2 border-l-2 border-gold-metallic/40" />
+                <div className="absolute top-4 right-4 w-4 h-4 border-t-2 border-r-2 border-gold-metallic/40" />
+                <div className="absolute bottom-4 left-4 w-4 h-4 border-b-2 border-l-2 border-gold-metallic/40" />
+                <div className="absolute bottom-4 right-4 w-4 h-4 border-b-2 border-r-2 border-gold-metallic/40" />
 
-              {/* Developer badge showing configuration mode */}
-              <button
-                onClick={() => setIsInstructionsOpen(true)}
-                className="inline-flex items-center gap-1.5 text-[10px] font-trajan tracking-widest text-gold-metallic/70 hover:text-gold-metallic bg-navy-deep/40 px-3 py-1.5 border border-gold-metallic/20 rounded-full transition-colors cursor-pointer"
-              >
-                <Sliders className="w-3.5 h-3.5" />
-                <span>{isApiActive ? "API GOOGLE DRIVE ACTIVA" : "AJUSTES DE DRIVE (PASOS)"}</span>
-              </button>
-            </div>
-          </motion.div>
-        </div>
-      </section>
+                <div className="space-y-2">
+                  <div className="relative flex justify-center mb-1">
+                    <div className="absolute -inset-3 bg-gold-metallic/10 rounded-full blur-lg animate-pulse" />
+                    <div className="w-12 h-12 flex items-center justify-center rounded-full border border-gold-metallic bg-navy-deep text-gold-metallic shadow-[0_0_15px_rgba(212,175,55,0.2)] relative z-10">
+                      <QrCode className="w-6 h-6 text-gold-metallic" />
+                    </div>
+                  </div>
+                  <h3 className="font-cinzel-decorative text-md md:text-lg text-gold-metallic tracking-widest font-bold">
+                    CÓDIGO QR DEL ÁLBUM
+                  </h3>
+                  <p className="font-cormorant text-md text-slate-700 font-semibold leading-relaxed max-w-xs mx-auto">
+                    Comparte conmigo los mejores momentos de mi fiesta en mi álbum virtual
+                  </p>
+                </div>
 
-      {/* ================= ÁLBUM DEL EVENTO GALLERY ================= */}
-      <section id="album-gallery-section" className="px-6 max-w-7xl mx-auto space-y-12">
-        <div className="text-center space-y-4 flex flex-col items-center">
-          <GrecianDivider />
-          <h2 className="font-cinzel-decorative text-3xl md:text-5xl text-ivory tracking-wider uppercase text-shine-gold font-bold">
-            Álbum del Evento
-          </h2>
-          <p className="font-trajan text-xs tracking-[0.4em] text-gold-metallic uppercase font-semibold">
-            La Galería del Templo de Camila
-          </p>
-        </div>
+                {/* QR Preview Wrapper */}
+                <div className="relative p-2.5 bg-ivory rounded-sm border-2 border-gold-metallic/50 shadow-[0_0_15px_rgba(212,175,55,0.2)] group overflow-hidden">
+                  <div className="absolute inset-0 bg-gold-metallic/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+                  {qrCodeUrl ? (
+                    <img 
+                      src={qrCodeUrl} 
+                      alt="QR Code de Galería" 
+                      className="w-36 h-36 transition-transform duration-300 group-hover:scale-105" 
+                    />
+                  ) : (
+                    <div className="w-36 h-36 flex items-center justify-center bg-navy-deep/20 text-gold-metallic/60 animate-pulse font-trajan text-[10px] tracking-widest">
+                      GENERANDO...
+                    </div>
+                  )}
+                </div>
 
-        {/* Category Navigation Pills */}
-        <div className="flex flex-wrap items-center justify-center gap-2 max-w-4xl mx-auto py-4">
-          {GALLERY_CATEGORIES.map((cat) => {
-            const count = items.filter(item => cat.id === 'all' || item.category === cat.id).length;
-            const isActive = activeCategory === cat.id;
+                <div className="w-full space-y-2 pt-1">
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      onClick={downloadQrPng}
+                      disabled={!qrCodeUrl}
+                      className="inline-flex items-center justify-center gap-1.5 py-2.5 bg-gold-metallic text-navy-deep hover:bg-gold-metallic/90 disabled:opacity-50 font-trajan text-[9px] tracking-widest font-black transition-all cursor-pointer rounded-sm border border-gold-metallic"
+                    >
+                      <Download className="w-3.5 h-3.5" />
+                      <span>DESCARGAR PNG</span>
+                    </button>
+                    <button
+                      onClick={downloadQrSvg}
+                      disabled={!qrCodeSvg}
+                      className="inline-flex items-center justify-center gap-1.5 py-2.5 bg-navy-deep border border-gold-metallic text-gold-metallic hover:bg-gold-metallic/10 disabled:opacity-50 font-trajan text-[9px] tracking-widest font-black transition-all cursor-pointer rounded-sm"
+                    >
+                      <Download className="w-3.5 h-3.5" />
+                      <span>DESCARGAR SVG</span>
+                    </button>
+                  </div>
 
-            return (
-              <button
-                key={cat.id}
-                onClick={() => setActiveCategory(cat.id)}
-                className={`px-4 py-2.5 rounded-full font-trajan text-[10px] tracking-widest font-semibold flex items-center gap-2 border transition-all duration-300 cursor-pointer select-none ${
-                  isActive
-                    ? 'bg-gold-metallic text-navy-deep border-gold-metallic font-bold shadow-[0_0_15px_rgba(212,175,55,0.35)]'
-                    : 'bg-navy-deep/40 text-ivory/85 border-gold-metallic/20 hover:border-gold-metallic hover:bg-navy-deep/70'
-                }`}
-              >
-                <span>{cat.emoji}</span>
-                <span>{cat.label}</span>
-                <span className={`px-1.5 py-0.5 rounded-full text-[8px] ${
-                  isActive ? 'bg-navy-deep text-white font-bold' : 'bg-white/10 text-gold-metallic/90'
-                }`}>
-                  {count}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Gallery Grid */}
-        {filteredItems.length === 0 ? (
-          <div className="text-center py-24 marble-plaque max-w-xl mx-auto border border-gold-metallic/20 p-8">
-            <FolderHeart className="w-12 h-12 text-gold-metallic/60 mx-auto animate-pulse" />
-            <h3 className="font-trajan text-sm text-gold-metallic mt-4 font-bold tracking-widest">GALERÍA EN BLANCO</h3>
-            <p className="font-cormorant text-lg text-slate-700 italic mt-2 font-semibold">
-              ¡Sé el primero en subir un recuerdo para esta categoría!
-            </p>
-          </div>
-        ) : (
-          <motion.div 
-            layout
-            className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 md:gap-8"
-          >
-            <AnimatePresence mode="popLayout">
-              {filteredItems.map((item, index) => {
-                const isVideo = item.mimeType.includes('video') || item.name.endsWith('.mp4') || item.name.endsWith('.mov');
-                const catInfo = GALLERY_CATEGORIES.find(c => c.id === item.category);
-
-                return (
-                  <motion.div
-                    key={item.id}
-                    layout
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.9 }}
-                    transition={{ duration: 0.4 }}
-                    onClick={() => setLightboxIndex(index)}
-                    className="group relative rounded-sm overflow-hidden aspect-[4/3] cursor-pointer select-none shadow-lg border border-gold-metallic/15 bg-black"
+                  <button
+                    onClick={copyGalleryLink}
+                    className="w-full inline-flex items-center justify-center gap-1.5 py-2 bg-navy-deep/40 hover:bg-navy-deep/80 border border-gold-metallic/20 text-gold-metallic font-trajan text-[8px] tracking-[0.2em] font-bold rounded-sm transition-all cursor-pointer"
                   >
-                    {/* Media render */}
-                    {isVideo ? (
-                      <div className="w-full h-full relative">
-                        <video 
-                          src={item.url} 
-                          className="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500"
-                          muted
-                          playsInline
-                        />
-                        <div className="absolute inset-0 flex items-center justify-center bg-black/25">
-                          <div className="w-12 h-12 rounded-full bg-navy-deep/80 border border-gold-metallic flex items-center justify-center text-gold-metallic shadow-lg group-hover:scale-110 transition-transform">
-                            <Video className="w-5 h-5 fill-gold-metallic/20" />
-                          </div>
-                        </div>
-                      </div>
-                    ) : (
-                      <img
-                        src={item.url}
-                        alt={item.name}
-                        loading="lazy"
-                        className="w-full h-full object-cover opacity-85 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500"
-                        referrerPolicy="no-referrer"
-                      />
-                    )}
+                    <Link className="w-3 h-3" />
+                    <span>{copiedLink ? "ENLACE COPIADO" : "COPIAR ENLACE EXCLUSIVO"}</span>
+                  </button>
+                </div>
+              </motion.div>
+            </div>
+          ) : (
+            /* Show upload panel when visiting standalone gallery */
+            <div className="w-full max-w-xl mx-auto">
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8 }}
+                className="marble-plaque p-8 md:p-12 relative shadow-2xl border border-gold-metallic/35 bg-gradient-to-b from-navy-deep/95 via-navy-deep/90 to-black/95 text-center space-y-8 flex flex-col justify-between"
+              >
+                {/* Ancient Greek border and meanders */}
+                <div className="absolute inset-2 border-2 border-gold-metallic/20 pointer-events-none rounded-sm" />
+                
+                {/* Greek Key-like corner designs */}
+                <div className="absolute top-4 left-4 w-6 h-6 border-t-2 border-l-2 border-gold-metallic/40" />
+                <div className="absolute top-4 right-4 w-6 h-6 border-t-2 border-r-2 border-gold-metallic/40" />
+                <div className="absolute bottom-4 left-4 w-6 h-6 border-b-2 border-l-2 border-gold-metallic/40" />
+                <div className="absolute bottom-4 right-4 w-6 h-6 border-b-2 border-r-2 border-gold-metallic/40" />
 
-                    {/* Elegant Gold Top Vignette on hover */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-black/75 opacity-70 group-hover:opacity-90 transition-opacity duration-300 flex flex-col justify-between p-4" />
+                {/* Glowing Icon Wrapper */}
+                <div className="relative flex justify-center mt-2">
+                  <div className="absolute -inset-4 bg-gold-metallic/10 rounded-full blur-xl animate-pulse" />
+                  <div className="w-20 h-20 flex items-center justify-center rounded-full border-2 border-gold-metallic bg-navy-deep text-gold-metallic shadow-[0_0_25px_rgba(212,175,55,0.35)] relative z-10">
+                    <Camera className="w-10 h-10 animate-pulse" />
+                  </div>
+                </div>
 
-                    {/* Metadata Overlay (always visible but elegant) */}
-                    <div className="absolute top-2 right-2 bg-navy-deep/80 border border-gold-metallic/35 px-2 py-0.5 rounded-full text-[8px] font-trajan text-gold-metallic font-bold tracking-widest z-10">
-                      {catInfo?.label || 'Recuerdo'}
-                    </div>
+                <div className="space-y-4 max-w-md mx-auto">
+                  <h3 className="font-cinzel-decorative text-xl md:text-2xl text-gold-metallic tracking-widest font-bold">
+                    ÁLBUM COLABORATIVO
+                  </h3>
+                  
+                  <p className="font-cormorant text-lg text-slate-700 leading-relaxed font-semibold">
+                    ¡Quiero guardar cada instante de esta noche mágica! Sube tus mejores fotos y videos directamente desde tu celular. Se organizarán automáticamente en las carpetas de Google Drive de mi álbum familiar.
+                  </p>
+                </div>
 
-                    <div className="absolute bottom-0 inset-x-0 p-4 translate-y-2 group-hover:translate-y-0 transition-transform duration-300 z-10">
-                      <div className="flex items-center gap-1.5 text-gold-metallic">
-                        <User className="w-3.5 h-3.5 text-gold-metallic" />
-                        <span className="font-trajan text-[9px] tracking-widest font-black uppercase truncate">
-                          {item.uploader}
-                        </span>
-                      </div>
-                      <p className="font-cormorant italic text-[11px] text-ivory/80 truncate font-semibold mt-0.5">
-                        {item.name.replace(/^\[.*?\]_(\d+)_/, '')}
-                      </p>
-                    </div>
+                <div className="pt-2 flex flex-col items-center gap-4">
+                  <button
+                    onClick={() => {
+                      setUploadStatus('idle');
+                      setIsModalOpen(true);
+                    }}
+                    className="w-full inline-flex items-center justify-center gap-3 px-8 py-4 bg-gradient-to-r from-gold-metallic/80 via-gold-metallic to-gold-metallic/80 text-navy-deep hover:text-navy-deep font-trajan text-xs tracking-[0.2em] font-bold rounded-full border-2 border-ivory shadow-[0_4px_20px_rgba(212,175,55,0.35)] hover:shadow-[0_4px_25px_rgba(212,175,55,0.55)] hover:scale-[1.03] transition-all duration-300 transform active:scale-95 cursor-pointer select-none group"
+                  >
+                    <Upload className="w-5 h-5 text-navy-deep group-hover:bounce" />
+                    <span>COMPARTIR MIS RECUERDOS</span>
+                  </button>
 
-                    {/* Hover Gold Frame */}
-                    <div className="absolute inset-2 border border-gold-metallic/40 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none rounded-xs" />
-                  </motion.div>
-                );
-              })}
-            </AnimatePresence>
-          </motion.div>
-        )}
+                  {/* Developer badge showing configuration mode */}
+                  <button
+                    onClick={() => setIsInstructionsOpen(true)}
+                    className="inline-flex items-center gap-1.5 text-[10px] font-trajan tracking-widest text-gold-metallic/70 hover:text-gold-metallic bg-navy-deep/40 px-3 py-1.5 border border-gold-metallic/20 rounded-full transition-colors cursor-pointer"
+                  >
+                    <Sliders className="w-3.5 h-3.5" />
+                    <span>{isApiActive ? "API GOOGLE DRIVE ACTIVA" : "AJUSTES DE DRIVE (PASOS)"}</span>
+                  </button>
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </div>
       </section>
 
       {/* ================= COMPARTIR RECUERDOS MODAL ================= */}
@@ -717,7 +766,7 @@ function doPost(e) {
                   SUBIR MIS RECUERDOS
                 </h3>
                 <p className="font-trajan text-[10px] tracking-widest text-gold-metallic/75 font-semibold">
-                  Templo del Olimpo de Camila Ytzel
+                  Templo del Olimpo de Ytzel
                 </p>
               </div>
 
@@ -741,16 +790,25 @@ function doPost(e) {
                       ✨ ¡MUCHAS GRACIAS!
                     </h4>
                     <p className="font-cormorant text-lg text-ivory/90 leading-relaxed font-semibold">
-                      Tus recuerdos ya forman parte del álbum de Camila. Que los dioses guíen siempre tu camino.
+                      Tus recuerdos ya forman parte del álbum de Ytzel. Que los dioses guíen siempre tu camino.
                     </p>
                   </div>
 
                   <button
-                    onClick={() => setUploadStatus('idle')}
+                    onClick={() => {
+                      if (autoCloseTimeoutRef.current) {
+                        clearTimeout(autoCloseTimeoutRef.current);
+                        autoCloseTimeoutRef.current = null;
+                      }
+                      setUploadStatus('idle');
+                    }}
                     className="px-6 py-2.5 border border-gold-metallic text-gold-metallic hover:bg-gold-metallic hover:text-navy-deep transition-all duration-300 font-trajan text-[10px] tracking-widest font-bold rounded-full cursor-pointer select-none"
                   >
                     SUBIR MÁS ARCHIVOS
                   </button>
+                  <p className="font-cormorant italic text-xs text-gold-metallic/80 font-medium animate-pulse">
+                    (Esta ventana se cerrará automáticamente en unos segundos)
+                  </p>
                 </motion.div>
               ) : uploadStatus === 'uploading' ? (
                 <div className="py-16 flex flex-col items-center space-y-8">
@@ -840,6 +898,7 @@ function doPost(e) {
                       }`}
                     >
                       <input
+                        ref={fileInputRef}
                         type="file"
                         id="file-upload-input"
                         multiple
@@ -867,7 +926,10 @@ function doPost(e) {
                         <span className="font-trajan text-[8px] tracking-widest text-gold-metallic font-bold">ARCHIVOS LISTOS ({selectedFiles.length})</span>
                         <button 
                           type="button" 
-                          onClick={() => setSelectedFiles([])}
+                          onClick={() => {
+                            setSelectedFiles([]);
+                            if (fileInputRef.current) fileInputRef.current.value = '';
+                          }}
                           className="font-trajan text-[8px] tracking-widest text-red-400 hover:text-red-300 font-bold"
                         >
                           QUITAR TODOS
@@ -1026,97 +1088,6 @@ function doPost(e) {
         )}
       </AnimatePresence>
 
-      {/* ================= LIGHTBOX MODAL ================= */}
-      <AnimatePresence>
-        {lightboxIndex !== null && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/95">
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setLightboxIndex(null)}
-              className="absolute inset-0 cursor-zoom-out"
-            />
-
-            {/* Navigation Buttons */}
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                prevLightboxItem();
-              }}
-              className="absolute left-4 z-10 text-gold-metallic hover:scale-110 p-2 rounded-full bg-black/40 border border-gold-metallic/25 cursor-pointer"
-            >
-              <ChevronLeft className="w-8 h-8" />
-            </button>
-
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                nextLightboxItem();
-              }}
-              className="absolute right-4 z-10 text-gold-metallic hover:scale-110 p-2 rounded-full bg-black/40 border border-gold-metallic/25 cursor-pointer"
-            >
-              <ChevronRight className="w-8 h-8" />
-            </button>
-
-            {/* Close Lightbox */}
-            <button
-              onClick={() => setLightboxIndex(null)}
-              className="absolute top-4 right-4 z-10 text-gold-metallic hover:scale-110 p-2 rounded-full bg-black/40 border border-gold-metallic/25 cursor-pointer"
-            >
-              <X className="w-6 h-6" />
-            </button>
-
-            {/* Media Box wrapper */}
-            <motion.div
-              key={lightboxIndex}
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="relative max-w-4xl max-h-[80vh] w-[90%] flex flex-col items-center justify-center select-none"
-              onClick={(e) => e.stopPropagation()}
-            >
-              {filteredItems[lightboxIndex] && (
-                <>
-                  {filteredItems[lightboxIndex].mimeType.includes('video') || filteredItems[lightboxIndex].name.endsWith('.mp4') || filteredItems[lightboxIndex].name.endsWith('.mov') ? (
-                    <video
-                      src={filteredItems[lightboxIndex].url}
-                      className="max-h-[70vh] w-auto max-w-full rounded-sm shadow-2xl border border-gold-metallic/20"
-                      controls
-                      autoPlay
-                      playsInline
-                    />
-                  ) : (
-                    <img
-                      src={filteredItems[lightboxIndex].url}
-                      alt={filteredItems[lightboxIndex].name}
-                      className="max-h-[70vh] w-auto max-w-full rounded-sm shadow-2xl border border-gold-metallic/20 object-contain"
-                      referrerPolicy="no-referrer"
-                    />
-                  )}
-
-                  {/* Metadata and details under active item */}
-                  <div className="w-full text-center mt-4 space-y-1">
-                    <p className="font-cormorant italic text-lg text-ivory max-w-lg mx-auto truncate font-semibold">
-                      {filteredItems[lightboxIndex].name.replace(/^\[.*?\]_(\d+)_/, '')}
-                    </p>
-                    <div className="flex items-center justify-center gap-3">
-                      <div className="flex items-center gap-1.5 text-gold-metallic bg-gold-metallic/10 border border-gold-metallic/20 px-2.5 py-0.5 rounded-full text-[10px] font-trajan tracking-widest font-black">
-                        <User className="w-3.5 h-3.5" />
-                        <span>SUBIDO POR: {filteredItems[lightboxIndex].uploader.toUpperCase()}</span>
-                      </div>
-                      <span className="text-ivory/40 text-xs">|</span>
-                      <span className="font-trajan text-[10px] tracking-widest text-gold-metallic/80 font-bold uppercase">
-                        {GALLERY_CATEGORIES.find(c => c.id === filteredItems[lightboxIndex].category)?.label || 'Recuerdo'}
-                      </span>
-                    </div>
-                  </div>
-                </>
-              )}
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
     </div>
   );
 };

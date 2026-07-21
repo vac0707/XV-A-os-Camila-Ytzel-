@@ -45,7 +45,20 @@ export default function App() {
   const [isInvitationOpen, setIsInvitationOpen] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [activePhoto, setActivePhoto] = useState<string | null>(null);
+  const [isStandaloneGallery, setIsStandaloneGallery] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => {
+    const isGallery = 
+      window.location.search.includes('view=galeria') || 
+      window.location.hash === '#/galeria' || 
+      window.location.pathname.endsWith('/galeria') || 
+      window.location.pathname.endsWith('/galeria/');
+    if (isGallery) {
+      setIsStandaloneGallery(true);
+      setIsInvitationOpen(true); // Bypass the Welcome Gate
+    }
+  }, []);
 
   const handleOpenInvitation = () => {
     setIsInvitationOpen(true);
@@ -70,8 +83,120 @@ export default function App() {
   const formattedMonth = "08";
   const formattedYear = "2026";
 
+  // Standalone mode template
+  if (isStandaloneGallery) {
+    return (
+      <div className="min-h-screen relative bg-olympus-sky text-navy-deep selection:bg-gold-metallic/30 overflow-x-hidden">
+        {/* Load the global gold gradients for SVG fills */}
+        <GoldGradients />
+
+        {/* --- Global Background Animations --- */}
+        <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden bg-olympus-sky bg-dark-constellations">
+          {/* Olympus Greek Mythology Cloud Background */}
+          <OlympusCloudscape />
+
+          {/* Subtle marble veins mixed into the navy space background */}
+          <div 
+            className="absolute inset-0 opacity-[0.03] bg-cover bg-center bg-no-repeat"
+            style={{ backgroundImage: `url(${BG_PATTERN})`, mixBlendMode: 'overlay' }}
+          />
+
+          {/* Twinkling stars */}
+          {Array.from({ length: 50 }).map((_, i) => (
+            <div
+              key={i}
+              className="star"
+              style={{
+                left: `${Math.random() * 100}%`,
+                top: `${Math.random() * 100}%`,
+                width: `${Math.random() * 2 + 1}px`,
+                height: `${Math.random() * 2 + 1}px`,
+                '--duration': `${Math.random() * 3 + 2}s`
+              } as any}
+            />
+          ))}
+
+          {/* Golden floating dust */}
+          <GoldDustOverlay />
+        </div>
+
+        {/* Corner Ornaments */}
+        <div className="fixed top-0 left-0 w-24 h-24 md:w-36 md:h-36 lg:w-44 lg:h-44 overflow-hidden pointer-events-none z-40 select-none">
+          <img 
+            src="https://res.cloudinary.com/dcnynnstm/image/upload/v1784320255/esquinas_xktcx0.png" 
+            alt="Decorative Top Left" 
+            className="absolute top-0 left-0 h-full w-[200%] max-w-none object-cover object-left-top"
+            referrerPolicy="no-referrer"
+          />
+        </div>
+        <div className="fixed top-0 right-0 w-24 h-24 md:w-36 md:h-36 lg:w-44 lg:h-44 overflow-hidden pointer-events-none z-40 select-none">
+          <img 
+            src="https://res.cloudinary.com/dcnynnstm/image/upload/v1784320255/esquinas_xktcx0.png" 
+            alt="Decorative Top Right" 
+            className="absolute top-0 right-0 h-full w-[200%] max-w-none object-cover object-right-top"
+            referrerPolicy="no-referrer"
+          />
+        </div>
+
+        {/* Standalone Header with Greek Columns, Theme, Back to Invitation Link, etc. */}
+        <header className="relative pt-16 pb-8 px-6 text-center z-10 max-w-4xl mx-auto space-y-4">
+          <div className="flex flex-col items-center">
+            {/* Elegant Greek Lyre/Wing emblem */}
+            <div className="w-16 h-16 rounded-full border border-gold-metallic/35 flex items-center justify-center bg-navy-deep/80 text-gold-metallic shadow-[0_0_15px_rgba(212,175,55,0.2)] mb-4">
+              <Camera className="w-8 h-8" />
+            </div>
+            
+            <h1 className="font-cinzel-decorative text-4xl md:text-6xl text-gold-metallic tracking-wider uppercase text-shine-gold font-bold">
+              {QUINCE_NAME_FIRST}
+            </h1>
+            
+            <p className="font-trajan text-xs md:text-sm tracking-[0.4em] text-ivory/80 uppercase font-bold mt-2">
+              {EVENT_TITLE} • {EVENT_THEME.toUpperCase()}
+            </p>
+            
+            <div className="flex items-center justify-center gap-3 mt-4">
+              <div className="h-0.5 w-12 bg-gradient-to-r from-transparent to-gold-metallic/30" />
+              <span className="font-trajan text-[10px] tracking-widest text-gold-metallic uppercase font-bold">Templo de los Recuerdos</span>
+              <div className="h-0.5 w-12 bg-gradient-to-l from-transparent to-gold-metallic/30" />
+            </div>
+          </div>
+        </header>
+
+        {/* Main Content Area */}
+        <main className="relative z-10">
+          <CollaborativeGallery isStandalone={true} />
+        </main>
+
+        {/* Simple Footer */}
+        <footer className="relative py-16 text-center z-10 max-w-md mx-auto space-y-4">
+          <div className="h-px bg-gradient-to-r from-transparent via-gold-metallic/30 to-transparent w-full" />
+          <p className="font-cormorant italic text-lg text-slate-700 leading-relaxed font-semibold">
+            &ldquo;Tu presencia y cada recuerdo compartido hacen eterno este día.&rdquo;
+          </p>
+          <div className="pt-2">
+            <a 
+              href={window.location.origin + window.location.pathname}
+              className="inline-flex items-center gap-2 px-6 py-3 bg-navy-deep/60 border border-gold-metallic text-gold-metallic hover:bg-gold-metallic hover:text-navy-deep font-trajan text-[10px] tracking-[0.2em] font-bold transition-all duration-300 rounded-sm shadow-md"
+            >
+              <span>VER INVITACIÓN COMPLETA</span>
+            </a>
+          </div>
+          <p className="font-trajan text-[9px] tracking-[0.2em] text-ivory/50 uppercase pt-4">
+            {QUINCE_NAME_FIRST} • 2026
+          </p>
+        </footer>
+
+        {/* Paper texture overlay */}
+        <div 
+          className="fixed inset-0 pointer-events-none opacity-[0.025] z-[100]" 
+          style={{ backgroundImage: `url('https://www.transparenttextures.com/patterns/black-paper.png')` }} 
+        />
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen relative bg-olympus-sky text-ivory selection:bg-gold-metallic/30 overflow-x-hidden">
+    <div className="min-h-screen relative bg-olympus-sky text-navy-deep selection:bg-gold-metallic/30 overflow-x-hidden">
       {/* Load the global gold gradients for SVG fills */}
       <GoldGradients />
 
@@ -202,10 +327,10 @@ export default function App() {
                   className="space-y-1"
                 >
                   <span className="font-bickham text-6xl md:text-8xl text-gold-metallic block drop-shadow-[0_1.5px_2px_rgba(0,0,0,0.4)] font-medium">
-                    Camila
+                    Ytzel
                   </span>
-                  <h1 className="font-cursive text-3xl md:text-5xl lg:text-6xl text-white tracking-wide mt-2">
-                    Ytzel Figueroa Zapata
+                  <h1 className="font-cursive text-3xl md:text-5xl lg:text-6xl text-navy-deep tracking-wide mt-2">
+                    Figueroa Zapata
                   </h1>
                 </motion.div>
 
@@ -217,7 +342,7 @@ export default function App() {
                   transition={{ duration: 1.2, delay: 0.4 }}
                   className="max-w-md mx-auto lg:mx-0 border-l-2 border-gold-metallic/50 pl-6 text-left py-1"
                 >
-                  <p className="font-cormorant text-base md:text-lg italic text-ivory/80 leading-relaxed">
+                  <p className="font-cormorant text-base md:text-lg italic text-navy-deep/80 leading-relaxed">
                     {HERO_QUOTE}
                   </p>
                 </motion.div>
@@ -228,7 +353,7 @@ export default function App() {
                   whileInView={{ opacity: 1, scale: 1 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.8, delay: 0.5 }}
-                  className="inline-flex items-center gap-4 justify-center py-3 px-6 bg-navy-deep/40 border border-gold-metallic/30 rounded-sm relative"
+                  className="inline-flex items-center gap-4 justify-center py-3 px-6 bg-navy-deep border border-gold-metallic/30 rounded-sm relative"
                 >
                   {/* Left branch */}
                   <svg viewBox="0 0 100 100" className="w-8 h-8 fill-current text-gold-metallic/60 transform scale-x-[-1]">
@@ -268,7 +393,7 @@ export default function App() {
                   <div className="w-full h-full rounded-sm overflow-hidden temple-photo-frame bg-navy-deep">
                     <img 
                       src={COVER_IMAGE} 
-                      alt="Camila Ytzel Figueroa"
+                      alt="Ytzel Figueroa"
                       className="w-full h-full object-cover grayscale-[5%] hover:scale-105 transition-transform duration-700"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-navy-deep/40 via-transparent to-transparent pointer-events-none" />
@@ -366,12 +491,12 @@ export default function App() {
                   <div className="absolute inset-1 border border-gold-metallic/30 rounded-full" />
                   <GreekTempleIcon className="w-full h-full text-navy-deep" />
                 </div>
-                <span className="mt-2 text-[10px] font-trajan text-ivory tracking-widest uppercase font-bold opacity-85 group-hover:text-gold-metallic transition-colors">
+                <span className="mt-2 text-[10px] font-trajan text-navy-deep tracking-widest uppercase font-bold opacity-85 group-hover:text-gold-metallic transition-colors">
                   Itinerario
                 </span>
               </button>
 
-              {/* REGALOS */}
+              {/* DETALLES */}
               <button 
                 onClick={() => scrollToSection('gifts-section')}
                 className="flex flex-col items-center group cursor-pointer focus:outline-none"
@@ -380,8 +505,8 @@ export default function App() {
                   <div className="absolute inset-1 border border-gold-metallic/30 rounded-full" />
                   <GreekAmphoraIcon className="w-full h-full text-navy-deep" />
                 </div>
-                <span className="mt-2 text-[10px] font-trajan text-ivory tracking-widest uppercase font-bold opacity-85 group-hover:text-gold-metallic transition-colors">
-                  Regalos
+                <span className="mt-2 text-[10px] font-trajan text-navy-deep tracking-widest uppercase font-bold opacity-85 group-hover:text-gold-metallic transition-colors">
+                  Detalles
                 </span>
               </button>
 
@@ -394,7 +519,7 @@ export default function App() {
                   <div className="absolute inset-1 border border-gold-metallic/30 rounded-full" />
                   <TridentIcon className="w-full h-full text-navy-deep" />
                 </div>
-                <span className="mt-2 text-[10px] font-trajan text-ivory tracking-widest uppercase font-bold opacity-85 group-hover:text-gold-metallic transition-colors">
+                <span className="mt-2 text-[10px] font-trajan text-navy-deep tracking-widest uppercase font-bold opacity-85 group-hover:text-gold-metallic transition-colors">
                   Ubicación
                 </span>
               </button>
@@ -408,7 +533,7 @@ export default function App() {
                   <div className="absolute inset-1 border border-gold-metallic/30 rounded-full" />
                   <AthenaOwlIcon className="w-full h-full text-navy-deep" />
                 </div>
-                <span className="mt-2 text-[10px] font-trajan text-ivory tracking-widest uppercase font-bold opacity-85 group-hover:text-gold-metallic transition-colors">
+                <span className="mt-2 text-[10px] font-trajan text-navy-deep tracking-widest uppercase font-bold opacity-85 group-hover:text-gold-metallic transition-colors">
                   Galería
                 </span>
               </button>
@@ -422,7 +547,7 @@ export default function App() {
                   <div className="absolute inset-1 border border-gold-metallic/30 rounded-full" />
                   <Camera className="w-full h-full text-navy-deep p-0.5" />
                 </div>
-                <span className="mt-2 text-[10px] font-trajan text-ivory tracking-widest uppercase font-bold opacity-85 group-hover:text-gold-metallic transition-colors text-center">
+                <span className="mt-2 text-[10px] font-trajan text-navy-deep tracking-widest uppercase font-bold opacity-85 group-hover:text-gold-metallic transition-colors text-center">
                   Recuerdos
                 </span>
               </button>
@@ -436,7 +561,7 @@ export default function App() {
                   <div className="absolute inset-1 border border-gold-metallic/30 rounded-full" />
                   <CelestialWingsIcon className="w-full h-full text-navy-deep" />
                 </div>
-                <span className="mt-2 text-[10px] font-trajan text-ivory tracking-widest uppercase font-bold opacity-85 group-hover:text-gold-metallic transition-colors text-center">
+                <span className="mt-2 text-[10px] font-trajan text-navy-deep tracking-widest uppercase font-bold opacity-85 group-hover:text-gold-metallic transition-colors text-center">
                   Confirmar
                 </span>
               </button>
@@ -469,24 +594,24 @@ export default function App() {
 
                 <div className="space-y-3 font-cormorant text-navy-deep text-sm font-semibold px-1.5">
                   <div className="flex justify-between border-b border-gold-metallic/15 pb-1">
-                    <span className="font-serif-cinzel font-bold text-xs">6:00 PM</span>
-                    <span>RECEPCIÓN</span>
+                    <span className="font-serif-cinzel font-bold text-xs">18:00 hrs</span>
+                    <span>ENTRADA AL REINO CELESTIAL</span>
                   </div>
                   <div className="flex justify-between border-b border-gold-metallic/15 pb-1">
-                    <span className="font-serif-cinzel font-bold text-xs">7:00 PM</span>
-                    <span>CENA DE GALA</span>
+                    <span className="font-serif-cinzel font-bold text-xs">20:00 hrs</span>
+                    <span>LA CEREMONIA SAGRADA</span>
                   </div>
                   <div className="flex justify-between border-b border-gold-metallic/15 pb-1">
-                    <span className="font-serif-cinzel font-bold text-xs">8:00 PM</span>
-                    <span>BAILE SORPRESA</span>
-                  </div>
-                  <div className="flex justify-between border-b border-gold-metallic/15 pb-1">
-                    <span className="font-serif-cinzel font-bold text-xs">9:00 PM</span>
+                    <span className="font-serif-cinzel font-bold text-xs">22:00 hrs</span>
                     <span>BRINDIS DE HONOR</span>
                   </div>
                   <div className="flex justify-between border-b border-gold-metallic/15 pb-1">
-                    <span className="font-serif-cinzel font-bold text-xs">10:00 PM</span>
-                    <span>FIESTA & HORA LOCA</span>
+                    <span className="font-serif-cinzel font-bold text-xs">22:30 hrs</span>
+                    <span>BANQUETE DE HÉROES</span>
+                  </div>
+                  <div className="flex justify-between border-b border-gold-metallic/15 pb-1">
+                    <span className="font-serif-cinzel font-bold text-xs">23:00 hrs</span>
+                    <span>LA DANZA DE LAS MUSAS</span>
                   </div>
                 </div>
 
@@ -540,7 +665,7 @@ export default function App() {
                 </a>
               </motion.div>
 
-              {/* Card 3: REGALOS DIRECT ACCESS */}
+              {/* Card 3: DETALLES DIRECT ACCESS */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -555,14 +680,14 @@ export default function App() {
                     <GreekAmphoraIcon className="w-full h-full" />
                   </div>
                   <h3 className="font-trajan text-base text-navy-deep font-extrabold tracking-wider">
-                    REGALOS
+                    DETALLES
                   </h3>
                   <div className="w-12 h-px bg-gold-metallic/40" />
                 </div>
 
                 <div className="text-center space-y-2 text-navy-deep">
                   <p className="font-cormorant text-sm italic text-slate-600 leading-relaxed px-1">
-                    &ldquo;Tu presencia es mi mayor regalo, y cada muestra de cariño o buenos deseos es invaluable para mí.&rdquo;
+                    &ldquo;Tu presencia es mi mayor detalle, y cada muestra de cariño o buenos deseos es invaluable para mí.&rdquo;
                   </p>
                 </div>
 
@@ -570,7 +695,7 @@ export default function App() {
                   onClick={() => scrollToSection('gifts-section')}
                   className="w-full py-2.5 bg-navy-deep text-gold-metallic font-trajan text-[10px] tracking-widest font-bold hover:text-white border border-gold-metallic/35 transition-colors cursor-pointer flex items-center justify-center gap-2"
                 >
-                  MESA DE REGALOS
+                  MESA DE DETALLES
                 </button>
               </motion.div>
 
@@ -588,7 +713,7 @@ export default function App() {
             
             <div className="text-center space-y-3 flex flex-col items-center">
               <GrecianDivider />
-              <h2 className="font-cinzel-decorative text-3xl md:text-5xl text-ivory tracking-wider uppercase text-shine-gold font-bold">
+              <h2 className="font-cinzel-decorative text-3xl md:text-5xl text-navy-deep tracking-wider uppercase text-shine-gold font-bold">
                 Galería de Fotos
               </h2>
               <p className="font-cursive text-2xl md:text-3xl text-gold-metallic/85">
@@ -651,7 +776,7 @@ export default function App() {
 
             <div className="space-y-1 opacity-50 pt-6">
               <p className="font-trajan text-xs tracking-[0.6em] text-gold-metallic font-semibold uppercase">
-                Camila Ytzel Figueroa Zapata
+                Ytzel Figueroa Zapata
               </p>
               <p className="font-trajan text-[9px] tracking-[0.2em] text-ivory/80 uppercase">
                 {EVENT_TITLE} • <span className="font-serif-cinzel font-bold">2026</span>

@@ -34,7 +34,7 @@ export const Itinerary = () => {
           className="flex flex-col items-center space-y-2"
         >
           <GrecianDivider />
-          <h2 className="font-cinzel-decorative text-3xl md:text-5xl text-ivory tracking-[0.2em] uppercase text-shine-gold font-bold">
+          <h2 className="font-cinzel-decorative text-3xl md:text-5xl text-navy-deep tracking-[0.2em] uppercase text-shine-gold font-bold">
             Itinerario
           </h2>
           <span className="font-cursive text-2xl md:text-3xl text-gold-metallic/80">Cronología del Olimpo Celestial</span>

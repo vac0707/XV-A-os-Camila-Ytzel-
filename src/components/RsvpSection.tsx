@@ -14,7 +14,7 @@ export const RsvpSection = () => {
       
       <div className="text-center space-y-4 relative z-10 flex flex-col items-center">
         <GrecianDivider />
-        <h2 className="font-cinzel-decorative text-3xl md:text-5xl text-ivory tracking-wider uppercase text-shine-gold font-bold">
+        <h2 className="font-cinzel-decorative text-3xl md:text-5xl text-navy-deep tracking-wider uppercase text-shine-gold font-bold">
           Confirmación de Asistencia
         </h2>
         <p className="font-trajan text-xs tracking-[0.4em] text-gold-metallic uppercase font-semibold">
@@ -52,7 +52,7 @@ export const RsvpSection = () => {
               PASE CELESTIAL
             </h3>
             
-            <p className="font-cormorant text-lg text-slate-700 leading-relaxed font-semibold">
+            <p className="font-cormorant text-lg text-ivory/85 leading-relaxed font-semibold">
               Para nosotros es un honor contar con tu presencia en esta noche de leyenda y constelaciones. Por favor, confirma tu asistencia con anticipación para reservar tu lugar en el banquete del Olimpo.
             </p>
 
@@ -70,7 +70,7 @@ export const RsvpSection = () => {
               <div className="flex items-center justify-center gap-2 pt-2">
                 <UserCheck className="w-4 h-4 text-gold-metallic" />
                 <span className="font-trajan text-xs tracking-widest text-gold-metallic/90">A NOMBRE DE:</span>
-                <span className="font-trajan text-sm font-black text-ivory tracking-wider">DENISSE</span>
+                <span className="font-trajan text-sm font-black text-ivory tracking-wider">ELIA DENISSE</span>
               </div>
               <p className="font-serif-cinzel text-lg font-bold text-gold-metallic tracking-wider">
                 +51 961 793 504
@@ -91,7 +91,7 @@ export const RsvpSection = () => {
           </div>
 
           <p className="font-cormorant italic text-xs text-slate-500 font-semibold">
-            Haz clic en el botón superior para enviar un mensaje automático por WhatsApp a Denisse.
+            Haz clic en el botón superior para enviar un mensaje automático por WhatsApp a Elia Denisse.
           </p>
         </motion.div>
       </div>

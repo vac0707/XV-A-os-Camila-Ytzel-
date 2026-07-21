@@ -13,12 +13,17 @@
   /* Custom Greek Mythology Color Palette */
   --color-marble-white: #F8F8F8;
   --color-gold-metallic: #D4AF37;
-  --color-navy-deep: #14213D;
-  --color-ivory: #FFF8F0;
-  --color-stone-gray: #D9D9D9;
+  --color-navy-deep: #8B3A4A;     /* Granate Elegante #8B3A4A */
+  --color-ivory: #FFF8F2;         /* Marfil #FFF8F2 */
+  --color-stone-gray: #E4E2DD;    /* Gris Piedra Claro #E4E2DD */
 
-  --color-celestial-dark: #0a1128;
-  --color-celestial-glow: #0f172a;
+  /* Secondary & Highlight Theme Colors */
+  --color-wine-rose: #A64D63;     /* Vino Rosado #A64D63 */
+  --color-dusty-rose: #D8A7B1;    /* Rosa Empolvado #D8A7B1 */
+  --color-champagne: #E8D9B5;     /* Champagne #E8D9B5 */
+
+  --color-celestial-dark: #8B3A4A;
+  --color-celestial-glow: #A64D63;
   --color-silver: #cbd5e1;
   --color-silver-bright: #f8fafc;
   --color-accent: #e2e8f0;
@@ -56,8 +61,8 @@
 
 @layer base {
   body {
-    background-color: var(--color-navy-deep);
-    color: var(--color-ivory);
+    background-color: var(--color-marble-white);
+    color: var(--color-navy-deep);
     overflow-x: hidden;
     font-family: var(--font-sans);
     margin: 0;
@@ -69,11 +74,11 @@
   .text-shine-gold {
     background: linear-gradient(
       to right,
-      #B8860B 0%,
-      #E6C229 25%,
-      #FFF099 50%,
-      #E6C229 75%,
-      #B8860B 100%
+      #8B3A4A 0%,
+      #D4AF37 25%,
+      #E8D9B5 50%,
+      #D4AF37 75%,
+      #8B3A4A 100%
     );
     background-size: 200% auto;
     -webkit-background-clip: text;
@@ -97,12 +102,12 @@
 
   /* Marble plaque effects */
   .marble-plaque {
-    background: linear-gradient(135deg, #ffffff 0%, #f4f4f4 50%, #eaeaea 100%);
+    background: linear-gradient(135deg, #ffffff 0%, var(--color-ivory) 50%, #fcfcfc 100%);
     box-shadow: 
-      inset 0 1px 0 rgba(255, 255, 255, 0.8),
-      0 10px 30px rgba(0, 0, 0, 0.25),
-      0 1px 3px rgba(0, 0, 0, 0.1);
-    border: 2px solid #D4AF37;
+      inset 0 1px 0 rgba(255, 255, 255, 0.9),
+      0 10px 30px rgba(139, 58, 74, 0.08),
+      0 1px 3px rgba(139, 58, 74, 0.04);
+    border: 2px solid var(--color-gold-metallic);
     position: relative;
     border-radius: 8px;
   }
@@ -117,12 +122,12 @@
   }
 
   .dark-marble-plaque {
-    background: linear-gradient(135deg, #101a30 0%, #0d1527 50%, #070c17 100%);
+    background: linear-gradient(135deg, var(--color-navy-deep) 0%, #762F3C 50%, #60222D 100%);
     box-shadow: 
-      inset 0 1px 0 rgba(255, 255, 255, 0.1),
-      0 15px 35px rgba(0, 0, 0, 0.4),
-      0 2px 5px rgba(0, 0, 0, 0.2);
-    border: 1px solid rgba(212, 175, 55, 0.35);
+      inset 0 1px 0 rgba(255, 255, 255, 0.15),
+      0 15px 35px rgba(139, 58, 74, 0.25),
+      0 2px 5px rgba(139, 58, 74, 0.15);
+    border: 1px solid rgba(212, 175, 55, 0.45);
     position: relative;
     border-radius: 8px;
   }
@@ -131,7 +136,7 @@
     content: '';
     position: absolute;
     inset: 4px;
-    border: 1px solid rgba(212, 175, 55, 0.15);
+    border: 1px solid rgba(212, 175, 55, 0.25);
     pointer-events: none;
     border-radius: 5px;
   }
@@ -144,11 +149,11 @@
 
   /* Photo Frame Inspired by Temple architecture */
   .temple-photo-frame {
-    border: 16px solid #F8F8F8;
-    outline: 2px solid #D4AF37;
+    border: 16px solid var(--color-marble-white);
+    outline: 2px solid var(--color-gold-metallic);
     box-shadow: 
-      0 30px 60px rgba(0, 0, 0, 0.5),
-      inset 0 0 20px rgba(0,0,0,0.15);
+      0 30px 60px rgba(139, 58, 74, 0.18),
+      inset 0 0 20px rgba(0,0,0,0.08);
     position: relative;
   }
 
@@ -173,15 +178,15 @@
 /* Star styles */
 .star {
   position: absolute;
-  background: white;
+  background: var(--color-gold-metallic);
   border-radius: 50%;
   animation: twinkle var(--duration, 3s) ease-in-out infinite;
-  opacity: 0.3;
+  opacity: 0.45;
 }
 
 .gold-dust {
   position: absolute;
-  background: radial-gradient(circle, #FFF099 0%, rgba(212, 175, 55, 0) 70%);
+  background: radial-gradient(circle, #E8D9B5 0%, rgba(212, 175, 55, 0) 70%);
   border-radius: 50%;
   pointer-events: none;
   animation: gold-sparkle var(--duration, 5s) ease-in-out infinite;
@@ -192,29 +197,29 @@
   width: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #080d19;
+  background: var(--color-marble-white);
 }
 ::-webkit-scrollbar-thumb {
-  background: #D4AF37;
+  background: var(--color-gold-metallic);
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #FFF099;
+  background: var(--color-navy-deep);
 }
 
 /* Background Veins pattern for marble effect */
 .bg-marble-veins {
-  background-color: #F8F8F8;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cpath d='M0 20 Q 30 25, 50 10 T 100 30 M100 60 Q 70 80, 40 70 T 0 90' fill='none' stroke='rgba(0,0,0,0.03)' stroke-width='1.5'/%3E%3Cpath d='M20 0 Q 35 40, 10 60 T 40 100' fill='none' stroke='rgba(212,175,55,0.02)' stroke-width='1'/%3E%3C/svg%3E");
+  background-color: var(--color-marble-white);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cpath d='M0 20 Q 30 25, 50 10 T 100 30 M100 60 Q 70 80, 40 70 T 0 90' fill='none' stroke='rgba(139,58,74,0.015)' stroke-width='1.5'/%3E%3Cpath d='M20 0 Q 35 40, 10 60 T 40 100' fill='none' stroke='rgba(212,175,55,0.02)' stroke-width='1'/%3E%3C/svg%3E");
 }
 
 .bg-dark-constellations {
-  background-color: #14213D;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150' viewBox='0 0 150 150'%3E%3Ccircle cx='10' cy='30' r='1' fill='rgba(255,255,255,0.2)'/%3E%3Ccircle cx='70' cy='15' r='1.5' fill='rgba(255,255,255,0.3)'/%3E%3Ccircle cx='120' cy='60' r='1' fill='rgba(255,255,255,0.2)'/%3E%3Ccircle cx='40' cy='90' r='1' fill='rgba(255,255,255,0.15)'/%3E%3Ccircle cx='100' cy='110' r='1.5' fill='rgba(255,255,255,0.35)'/%3E%3Ccircle cx='140' cy='130' r='1' fill='rgba(255,255,255,0.2)'/%3E%3Cpath d='M10 30 L70 15 M70 15 L120 60 M40 90 L100 110 M100 110 L140 130' fill='none' stroke='rgba(255,255,255,0.04)' stroke-width='0.5'/%3E%3C/svg%3E");
+  background-color: var(--color-marble-white);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150' viewBox='0 0 150 150'%3E%3Ccircle cx='10' cy='30' r='1' fill='rgba(139,58,74,0.18)'/%3E%3Ccircle cx='70' cy='15' r='1.5' fill='rgba(139,58,74,0.22)'/%3E%3Ccircle cx='120' cy='60' r='1' fill='rgba(139,58,74,0.18)'/%3E%3Ccircle cx='40' cy='90' r='1' fill='rgba(139,58,74,0.14)'/%3E%3Ccircle cx='100' cy='110' r='1.5' fill='rgba(139,58,74,0.26)'/%3E%3Ccircle cx='140' cy='130' r='1' fill='rgba(139,58,74,0.18)'/%3E%3Cpath d='M10 30 L70 15 M70 15 L120 60 M40 90 L100 110 M100 110 L140 130' fill='none' stroke='rgba(139,58,74,0.05)' stroke-width='0.5'/%3E%3C/svg%3E");
 }
 
 .bg-olympus-sky {
-  background: radial-gradient(circle at 50% 15%, #24355a 0%, #0f182e 45%, #070c17 100%);
+  background: radial-gradient(circle at 50% 15%, var(--color-ivory) 0%, var(--color-marble-white) 45%, var(--color-stone-gray) 100%);
 }
 
 /* Greek Key repeating meander pattern helper for CSS bars */
