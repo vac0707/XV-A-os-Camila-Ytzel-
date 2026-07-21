@@ -30,27 +30,25 @@ export const EVENT_THEME = "Mitología Griega";
 
 // --- Location Details ---
 export const LOCATION_NAME = "Andina Real";
-export const LOCATION_ADDRESS = "Jirón 2 de Mayo 105";
+export const LOCATION_ADDRESS = "Jirón 2 de Mayo Nº 106, Huancané";
 export const LOCATION_MAP_URL = "https://maps.app.goo.gl/cbZKGobwPYLni9gL8";
 
 // --- WhatsApp RSVP Settings ---
 // [RESERVED SPACE] - Change this phone number to the Quinceañera's WhatsApp number for real RSVP
-export const WHATSAPP_RSVP_NUMBER = "51932350348"; 
-export const WHATSAPP_RSVP_TEXT = "Hola Camila Ytzel, confirmo mi asistencia a tu fiesta de XV años bajo las estrellas. ¡Muchas gracias!";
+export const WHATSAPP_RSVP_NUMBER = "51961793504"; 
+export const WHATSAPP_RSVP_TEXT = "Hola Denisse, confirmo mi asistencia a la fiesta de XV años de Camila Ytzel. ¡Muchas gracias!";
 
 // --- Quotes (Reserved Spaces) ---
 export const HERO_QUOTE = "“Como en la mitología, cada sueño me hace más fuerte para escribir mi propia historia.”";
+export const INVITATION_INTRO = "Te invito a ser parte de mi propia leyenda y compartir conmigo una noche mágica e inolvidable.";
 export const FOOTER_QUOTE = "“Los dioses me dieron la vida, pero ustedes me enseñan a vivirla.”";
 
 // --- Family Section Data ---
-export const PARENTS = [
-  "Victor César Figueroa Villa", // Placeholder or actual father name
-  "América Zapata Quispe" // Placeholder or actual mother name
-];
+export const MOTHER = "Elia Denisse Zapata Sacaca";
 
 export const SPONSORS = [
-  "Percy Cuadros Aparco", // Padrino
-  "Nery Sobrevilla Villa" // Madrina
+  "Regner Aljobin Justo Laime", // Padrino
+  "Soledad Quilla Tipula" // Madrina
 ];
 
 // --- Itinerary Items (Template of 5 main events from the reference design layout) ---
@@ -102,4 +100,18 @@ export const GIFT_BANK_ACCOUNTS: BankAccount[] = [
     cci: "003-200-XXXXXXXXXX-XX",
     holder: "Camila Ytzel Figueroa"
   }
+];
+
+// --- Google Drive & Collaborative Gallery Config ---
+export const DRIVE_ROOT_FOLDER_ID = "1zkEarqyurAeLFlTqey0JxjHXud6K2FFh";
+export const APPS_SCRIPT_URL = (import.meta as any).env?.VITE_APPS_SCRIPT_URL || "https://script.google.com/macros/s/AKfycbxbCk2AQoNTbwY9OhEl3YSXYVEpXBivmApCrwyrW34fNATL9ZAhrEkHerjSKYUUEEirxw/exec";
+export const GALLERY_CATEGORIES = [
+  { id: 'all', label: 'Todas', emoji: '✨' },
+  { id: 'official', label: 'Fotos Oficiales', emoji: '📸', folderName: '01_Fotos_Oficiales' },
+  { id: 'family', label: 'Familia', emoji: '👨‍👩‍👧', folderName: '02_Familia' },
+  { id: 'friends', label: 'Amigos', emoji: '👫', folderName: '03_Amigos' },
+  { id: 'dance', label: 'Baile', emoji: '💃', folderName: '04_Baile' },
+  { id: 'cake', label: 'Pastel', emoji: '🎂', folderName: '05_Pastel' },
+  { id: 'party', label: 'Fiesta', emoji: '🎉', folderName: '06_Fiesta' },
+  { id: 'videos', label: 'Videos', emoji: '🎥', folderName: '07_Videos' }
 ];

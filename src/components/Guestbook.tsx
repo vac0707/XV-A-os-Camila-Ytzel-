@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Send } from 'lucide-react';
+import { Send, FileSpreadsheet, FileText } from 'lucide-react';
 import { GuestComment } from '../types';
 import { QUINCE_NAME_FIRST } from '../data/eventData';
 import { GrecianDivider } from './GreekDecorations';
@@ -70,6 +70,57 @@ export const Guestbook = () => {
     setName("");
     setCommentText("");
     setSubmitting(false);
+  };
+
+  const downloadCSV = () => {
+    if (comments.length === 0) return;
+    const headers = ["Fecha", "Nombre o Familia", "Mensaje de Bendición"];
+    const rows = comments.map(c => [
+      c.date,
+      c.name.replace(/"/g, '""'),
+      c.comment.replace(/"/g, '""')
+    ]);
+    const csvContent = "\uFEFF" + [headers.join(","), ...rows.map(r => r.map(val => `"${val}"`).join(","))].join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", "libro_de_visitas_camila_ytzel.csv");
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const downloadTXT = () => {
+    if (comments.length === 0) return;
+    let doc = "";
+    doc += "========================================================================\n";
+    doc += "                  EL PERGAMINO DE LOS BUENOS DESEOS                     \n";
+    doc += "             XV AÑOS CELESTIALES DE CAMILA YTZEL FIGUEROA               \n";
+    doc += "========================================================================\n\n";
+    doc += `Generado el: ${new Date().toLocaleDateString('es-PE')}\n`;
+    doc += `Total de mensajes recopilados: ${comments.length}\n\n`;
+    doc += "------------------------------------------------------------------------\n\n";
+    comments.forEach((c, idx) => {
+      doc += `[MENSAJE Nº ${comments.length - idx}]\n`;
+      doc += `FECHA:  ${c.date}\n`;
+      doc += `AUTOR:  ${c.name}\n`;
+      doc += `DESEO:  "${c.comment}"\n`;
+      doc += "------------------------------------------------------------------------\n\n";
+    });
+    doc += "========================================================================\n";
+    doc += "          «Que el Olimpo y las estrellas guíen siempre tu camino»       \n";
+    doc += "========================================================================\n";
+    const blob = new Blob([doc], { type: "text/plain;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", "pergamino_de_recuerdos_camila_ytzel.txt");
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   return (
@@ -181,6 +232,52 @@ export const Guestbook = () => {
           )}
         </div>
       </div>
+
+      {/* ================= Temple Administration & Downloads ================= */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.8 }}
+        className="border-t border-gold-metallic/20 pt-12 text-center space-y-6"
+      >
+        <div className="max-w-xl mx-auto space-y-2">
+          <h3 className="font-trajan text-[11px] tracking-[0.3em] text-gold-metallic uppercase font-bold">
+            Administración del Templo
+          </h3>
+          <p className="font-cormorant italic text-base md:text-lg text-ivory/80 font-semibold leading-relaxed">
+            Al finalizar el evento, puedes descargar todos los hermosos deseos recopilados en tu libro de visitas para conservarlos por siempre en tus hojas de cálculo o documentos.
+          </p>
+        </div>
+
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 max-w-2xl mx-auto pt-2">
+          <button
+            onClick={downloadCSV}
+            disabled={comments.length === 0}
+            className={`w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-sm font-trajan text-[10px] tracking-widest font-bold border cursor-pointer select-none transition-all duration-300 ${
+              comments.length === 0
+                ? "border-ivory/10 text-ivory/35 bg-white/5 cursor-not-allowed opacity-40"
+                : "border-gold-metallic/35 text-gold-metallic bg-navy-deep/40 hover:bg-gold-metallic hover:text-navy-deep hover:shadow-[0_0_20px_rgba(212,175,55,0.25)] hover:scale-[1.02] active:scale-95"
+            }`}
+          >
+            <FileSpreadsheet className="w-4 h-4" />
+            DESCARGAR HOJA DE CÁLCULO (.CSV)
+          </button>
+
+          <button
+            onClick={downloadTXT}
+            disabled={comments.length === 0}
+            className={`w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-sm font-trajan text-[10px] tracking-widest font-bold border cursor-pointer select-none transition-all duration-300 ${
+              comments.length === 0
+                ? "border-ivory/10 text-ivory/35 bg-white/5 cursor-not-allowed opacity-40"
+                : "border-gold-metallic/35 text-gold-metallic bg-navy-deep/40 hover:bg-gold-metallic hover:text-navy-deep hover:shadow-[0_0_20px_rgba(212,175,55,0.25)] hover:scale-[1.02] active:scale-95"
+            }`}
+          >
+            <FileText className="w-4 h-4" />
+            DESCARGAR PERGAMINO DE TEXTO (.TXT)
+          </button>
+        </div>
+      </motion.div>
     </section>
   );
 };

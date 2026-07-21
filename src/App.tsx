@@ -13,7 +13,7 @@ import {
   QUINCE_NAME_FIRST, QUINCE_NAME_LAST_1, QUINCE_NAME_LAST_2, 
   EVENT_TITLE, EVENT_THEME, LOCATION_NAME, LOCATION_ADDRESS, 
   LOCATION_MAP_URL, WHATSAPP_RSVP_NUMBER, WHATSAPP_RSVP_TEXT, 
-  HERO_QUOTE, FOOTER_QUOTE, PARENTS, SPONSORS 
+  HERO_QUOTE, INVITATION_INTRO, FOOTER_QUOTE, MOTHER, SPONSORS 
 } from './data/eventData';
 
 // Sub-components
@@ -26,6 +26,8 @@ import { MusicPlayer } from './components/MusicPlayer';
 import { Itinerary } from './components/Itinerary';
 import { GiftList } from './components/GiftList';
 import { Guestbook } from './components/Guestbook';
+import { RsvpSection } from './components/RsvpSection';
+import { CollaborativeGallery } from './components/CollaborativeGallery';
 import { CreatorCard } from './components/CreatorCard';
 import { GreekPillars, CelestialClouds, GrecianDivider, GoldDustOverlay } from './components/GreekDecorations';
 import { 
@@ -298,19 +300,16 @@ export default function App() {
                 className="space-y-4 flex flex-col items-center"
               >
                 <GrecianDivider />
-                <p className="font-cormorant italic text-2xl md:text-3xl text-navy-deep/90 leading-relaxed">
-                  Tenemos el honor de invitarle a celebrar los
+                <p className="font-cormorant italic text-xl md:text-2xl text-navy-deep/90 leading-relaxed max-w-2xl mx-auto">
+                  {INVITATION_INTRO}
                 </p>
-                <h2 className="font-cinzel-decorative text-4xl md:text-6xl text-gold-metallic font-bold tracking-[0.2em] text-shine-gold">
+                <h2 className="font-cinzel-decorative text-4xl md:text-6xl text-gold-metallic font-bold tracking-[0.2em] text-shine-gold mt-2">
                   15 AÑOS
                 </h2>
-                <p className="font-trajan text-xs tracking-[0.4em] text-navy-deep uppercase opacity-75 font-semibold">
-                  De Nuestra Querida Hija
-                </p>
               </motion.div>
-
+ 
               <div className="grid md:grid-cols-2 gap-10 text-center pt-4">
-                {/* Parents (Reserved Space) */}
+                {/* Mother */}
                 <motion.div
                   initial={{ opacity: 0, y: 15 }}
                   whileInView={{ opacity: 1, y: 0 }}
@@ -318,15 +317,14 @@ export default function App() {
                   className="space-y-3 p-6 bg-white/40 rounded-sm border border-gold-metallic/15 shadow-sm"
                 >
                   <h3 className="font-trajan text-xs text-gold-metallic tracking-[0.2em] uppercase font-bold">
-                    Mis Amados Padres
+                    Bajo el amparo y amor de mi madre
                   </h3>
                   <div className="space-y-1 font-cormorant text-lg md:text-xl text-navy-deep font-semibold">
-                    <p>{PARENTS[0]}</p>
-                    <p>{PARENTS[1]}</p>
+                    <p>{MOTHER}</p>
                   </div>
                 </motion.div>
-
-                {/* Sponsors (Reserved Space) */}
+ 
+                {/* Sponsors */}
                 <motion.div
                   initial={{ opacity: 0, y: 15 }}
                   whileInView={{ opacity: 1, y: 0 }}
@@ -335,7 +333,7 @@ export default function App() {
                   className="space-y-3 p-6 bg-white/40 rounded-sm border border-gold-metallic/15 shadow-sm"
                 >
                   <h3 className="font-trajan text-xs text-gold-metallic tracking-[0.2em] uppercase font-bold">
-                    Mis Queridos Padrinos
+                    Con la guía y bendición de mis Padrinos
                   </h3>
                   <div className="space-y-1 font-cormorant text-lg md:text-xl text-navy-deep font-semibold">
                     <p>{SPONSORS[0]}</p>
@@ -415,11 +413,23 @@ export default function App() {
                 </span>
               </button>
 
+              {/* RECUERDOS */}
+              <button 
+                onClick={() => scrollToSection('upload-memories-section')}
+                className="flex flex-col items-center group cursor-pointer focus:outline-none"
+              >
+                <div className="w-16 h-16 rounded-full bg-marble-veins border-2 border-gold-metallic hover:scale-110 active:scale-95 transition-all duration-300 flex items-center justify-center text-gold-metallic shadow-[0_5px_15px_rgba(0,0,0,0.25)] relative p-3.5">
+                  <div className="absolute inset-1 border border-gold-metallic/30 rounded-full" />
+                  <Camera className="w-full h-full text-navy-deep p-0.5" />
+                </div>
+                <span className="mt-2 text-[10px] font-trajan text-ivory tracking-widest uppercase font-bold opacity-85 group-hover:text-gold-metallic transition-colors text-center">
+                  Recuerdos
+                </span>
+              </button>
+
               {/* CONFIRMAR ASISTENCIA */}
-              <a 
-                href={`https://wa.me/${WHATSAPP_RSVP_NUMBER}?text=${encodeURIComponent(WHATSAPP_RSVP_TEXT)}`}
-                target="_blank"
-                rel="noreferrer"
+              <button 
+                onClick={() => scrollToSection('rsvp-section')}
                 className="flex flex-col items-center group cursor-pointer focus:outline-none"
               >
                 <div className="w-16 h-16 rounded-full bg-marble-veins border-2 border-gold-metallic hover:scale-110 active:scale-95 transition-all duration-300 flex items-center justify-center text-gold-metallic shadow-[0_5px_15px_rgba(0,0,0,0.25)] relative p-3.5">
@@ -429,7 +439,7 @@ export default function App() {
                 <span className="mt-2 text-[10px] font-trajan text-ivory tracking-widest uppercase font-bold opacity-85 group-hover:text-gold-metallic transition-colors text-center">
                   Confirmar
                 </span>
-              </a>
+              </button>
             </div>
           </section>
 
@@ -516,7 +526,7 @@ export default function App() {
                     {LOCATION_ADDRESS}
                   </p>
                   <p className="font-trajan text-xs tracking-widest text-gold-metallic font-bold">
-                    SÁBADO <span className="font-serif-cinzel font-bold">07</span> DE AGOSTO
+                    VIERNES <span className="font-serif-cinzel font-bold">07</span> DE AGOSTO
                   </p>
                 </div>
 
@@ -552,7 +562,7 @@ export default function App() {
 
                 <div className="text-center space-y-2 text-navy-deep">
                   <p className="font-cormorant text-sm italic text-slate-600 leading-relaxed px-1">
-                    &ldquo;Tu presencia es mi mayor regalo, pero si deseas tener un detalle conmigo, te agradezco inmensamente.&rdquo;
+                    &ldquo;Tu presencia es mi mayor regalo, y cada muestra de cariño o buenos deseos es invaluable para mí.&rdquo;
                   </p>
                 </div>
 
@@ -560,7 +570,7 @@ export default function App() {
                   onClick={() => scrollToSection('gifts-section')}
                   className="w-full py-2.5 bg-navy-deep text-gold-metallic font-trajan text-[10px] tracking-widest font-bold hover:text-white border border-gold-metallic/35 transition-colors cursor-pointer flex items-center justify-center gap-2"
                 >
-                  VER CUENTAS BANCARIAS
+                  MESA DE REGALOS
                 </button>
               </motion.div>
 
@@ -594,6 +604,14 @@ export default function App() {
               <GreekHoroscopeCarousel />
             </div>
           </section>
+
+
+          {/* ================= COLLABORATIVE GALLERY SECTION ================= */}
+          <CollaborativeGallery />
+
+
+          {/* ================= RSVP SECTION ================= */}
+          <RsvpSection />
 
 
           {/* ================= GUESTBOOK SECTION ================= */}
