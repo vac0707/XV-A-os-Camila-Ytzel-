@@ -13,7 +13,8 @@ import {
   QUINCE_NAME_FIRST, QUINCE_NAME_LAST_1, QUINCE_NAME_LAST_2, 
   EVENT_TITLE, EVENT_THEME, LOCATION_NAME, LOCATION_ADDRESS, 
   LOCATION_MAP_URL, WHATSAPP_RSVP_NUMBER, WHATSAPP_RSVP_TEXT, 
-  HERO_QUOTE, INVITATION_INTRO, FOOTER_QUOTE, MOTHER, SPONSORS 
+  HERO_QUOTE, INVITATION_INTRO, FOOTER_QUOTE, MOTHER, SPONSORS,
+  ITINERARY_ITEMS 
 } from './data/eventData';
 
 // Sub-components
@@ -579,7 +580,7 @@ export default function App() {
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                className="marble-plaque p-8 flex flex-col justify-between space-y-6 relative"
+                className="marble-plaque p-5 sm:p-8 flex flex-col justify-between space-y-6 relative"
               >
                 <div className="absolute inset-2 border border-gold-metallic/20 pointer-events-none" />
                 
@@ -593,27 +594,17 @@ export default function App() {
                   <div className="w-12 h-px bg-gold-metallic/40" />
                 </div>
 
-                <div className="space-y-3 font-cormorant text-navy-deep text-sm font-semibold px-1.5">
-                  <div className="flex justify-between border-b border-gold-metallic/15 pb-1">
-                    <span className="font-serif-cinzel font-bold text-xs">18:00 hrs</span>
-                    <span>ENTRADA AL REINO CELESTIAL</span>
-                  </div>
-                  <div className="flex justify-between border-b border-gold-metallic/15 pb-1">
-                    <span className="font-serif-cinzel font-bold text-xs">20:00 hrs</span>
-                    <span>LA CEREMONIA SAGRADA</span>
-                  </div>
-                  <div className="flex justify-between border-b border-gold-metallic/15 pb-1">
-                    <span className="font-serif-cinzel font-bold text-xs">22:00 hrs</span>
-                    <span>BRINDIS DE HONOR</span>
-                  </div>
-                  <div className="flex justify-between border-b border-gold-metallic/15 pb-1">
-                    <span className="font-serif-cinzel font-bold text-xs">22:30 hrs</span>
-                    <span>BANQUETE DE HÉROES</span>
-                  </div>
-                  <div className="flex justify-between border-b border-gold-metallic/15 pb-1">
-                    <span className="font-serif-cinzel font-bold text-xs">23:00 hrs</span>
-                    <span>LA DANZA DE LAS MUSAS</span>
-                  </div>
+                <div className="space-y-3 font-cormorant text-navy-deep text-sm font-semibold">
+                  {ITINERARY_ITEMS.map((item, i) => (
+                    <div key={i} className="grid grid-cols-[80px_1fr] items-baseline gap-2.5 border-b border-gold-metallic/15 pb-2 text-left">
+                      <span className="font-serif-cinzel font-bold text-xs text-navy-deep/90 whitespace-nowrap">
+                        {item.time.toUpperCase()}
+                      </span>
+                      <span className="font-trajan text-xs font-bold tracking-wide text-navy-deep uppercase leading-tight">
+                        {item.title}
+                      </span>
+                    </div>
+                  ))}
                 </div>
 
                 <button 
@@ -630,7 +621,7 @@ export default function App() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: 0.1 }}
-                className="marble-plaque p-8 flex flex-col justify-between space-y-6 relative"
+                className="marble-plaque p-5 sm:p-8 flex flex-col justify-between space-y-6 relative"
               >
                 <div className="absolute inset-2 border border-gold-metallic/20 pointer-events-none" />
                 
@@ -672,7 +663,7 @@ export default function App() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: 0.2 }}
-                className="marble-plaque p-8 flex flex-col justify-between space-y-6 relative"
+                className="marble-plaque p-5 sm:p-8 flex flex-col justify-between space-y-6 relative"
               >
                 <div className="absolute inset-2 border border-gold-metallic/20 pointer-events-none" />
                 

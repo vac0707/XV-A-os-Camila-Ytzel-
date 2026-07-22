@@ -12,32 +12,20 @@ export const Guestbook = () => {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
 
-  const initialWishes: GuestComment[] = [
-    {
-      id: "1",
-      name: "Tía Nery Sobrevilla (Madrina)",
-      comment: "¡Felicidades mi hermosa Ytzel! Que esta nueva etapa de tu juventud esté siempre iluminada por los dioses, bendecida con mucha salud y llena de hermosas sonrisas. Te amamos muchísimo.",
-      date: "2026-07-16"
-    },
-    {
-      id: "2",
-      name: "Percy Cuadros Aparco (Padrino)",
-      comment: "Un honor inmenso acompañarte como padrino en tu maravillosa noche de XV años. Sigue adelante siempre con esa hermosa esencia que te caracteriza. ¡Muchas felicidades, ahijada!",
-      date: "2026-07-15"
-    }
-  ];
-
   useEffect(() => {
     const saved = localStorage.getItem("ytzel_quince_guestbook");
     if (saved) {
       try {
-        setComments(JSON.parse(saved));
+        const parsed: GuestComment[] = JSON.parse(saved);
+        // Filter out legacy example entries if present
+        const cleaned = parsed.filter(c => c.id !== "1" && c.id !== "2");
+        setComments(cleaned);
+        localStorage.setItem("ytzel_quince_guestbook", JSON.stringify(cleaned));
       } catch (e) {
-        setComments(initialWishes);
+        setComments([]);
       }
     } else {
-      setComments(initialWishes);
-      localStorage.setItem("ytzel_quince_guestbook", JSON.stringify(initialWishes));
+      setComments([]);
     }
   }, []);
 
