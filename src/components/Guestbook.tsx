@@ -16,6 +16,8 @@ export const Guestbook = () => {
   const [successMsg, setSuccessMsg] = useState("");
 
   useEffect(() => {
+    localStorage.removeItem("ytzel_quince_guestbook");
+
     let unsubscribe = () => {};
     try {
       const q = query(collection(db, "guestbook"), orderBy("createdAt", "desc"));

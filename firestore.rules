@@ -10,7 +10,8 @@ service cloud.firestore {
                     && request.resource.data.comment is string 
                     && request.resource.data.comment.size() > 0 
                     && request.resource.data.comment.size() <= 300;
-      allow update, delete: if false;
+      allow delete: if true;
+      allow update: if false;
     }
   }
 }
