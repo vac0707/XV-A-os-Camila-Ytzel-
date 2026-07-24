@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Send, FileSpreadsheet, FileText } from 'lucide-react';
+import { collection, addDoc, query, orderBy, onSnapshot, serverTimestamp } from 'firebase/firestore';
+import { db } from '../lib/firebase';
 import { GuestComment } from '../types';
 import { QUINCE_NAME_FIRST } from '../data/eventData';
 import { GrecianDivider } from './GreekDecorations';
@@ -13,48 +15,29 @@ export const Guestbook = () => {
   const [error, setError] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
 
-  const fetchComments = async () => {
-    try {
-      const res = await fetch("/api/guestbook");
-      if (res.ok) {
-        const serverData = await res.json();
-        if (Array.isArray(serverData)) {
-          const saved = localStorage.getItem("ytzel_quince_guestbook");
-          let localData: GuestComment[] = [];
-          if (saved) {
-            try { localData = JSON.parse(saved); } catch (e) {}
-          }
-          const map = new Map<string, GuestComment>();
-          [...serverData, ...localData].forEach(item => {
-            if (item && item.id && item.id !== "1" && item.id !== "2") {
-              map.set(item.id, item);
-            }
-          });
-          const merged = Array.from(map.values());
-          setComments(merged);
-          localStorage.setItem("ytzel_quince_guestbook", JSON.stringify(merged));
-        }
-      }
-    } catch (e) {
-      console.log("Server API sync check fallback to local storage");
-    }
-  };
-
   useEffect(() => {
-    const saved = localStorage.getItem("ytzel_quince_guestbook");
-    if (saved) {
-      try {
-        const parsed: GuestComment[] = JSON.parse(saved);
-        const cleaned = parsed.filter(c => c.id !== "1" && c.id !== "2");
-        setComments(cleaned);
-      } catch (e) {
-        setComments([]);
-      }
+    let unsubscribe = () => {};
+    try {
+      const q = query(collection(db, "guestbook"), orderBy("createdAt", "desc"));
+      unsubscribe = onSnapshot(q, (snapshot) => {
+        const fetched: GuestComment[] = snapshot.docs.map(doc => {
+          const data = doc.data();
+          return {
+            id: doc.id,
+            name: data.name || "",
+            comment: data.comment || "",
+            date: data.date || new Date().toISOString().split("T")[0]
+          };
+        });
+        setComments(fetched);
+      }, (err) => {
+        console.error("Error en la conexión con Firebase Firestore:", err);
+      });
+    } catch (e) {
+      console.error("Error inicializando Firestore listener:", e);
     }
-    fetchComments();
 
-    const interval = setInterval(fetchComments, 5000);
-    return () => clearInterval(interval);
+    return () => unsubscribe();
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -76,44 +59,20 @@ export const Guestbook = () => {
 
     setSubmitting(true);
 
-    const localEntry: GuestComment = {
-      id: Date.now().toString() + "-" + Math.random().toString(36).substring(2, 6),
-      name: trimmedName,
-      comment: trimmedComment,
-      date: new Date().toISOString().split("T")[0],
-    };
-
-    // Immediately display and save locally
-    setComments((prev) => {
-      const updated = [localEntry, ...prev.filter(c => c.id !== localEntry.id)];
-      localStorage.setItem("ytzel_quince_guestbook", JSON.stringify(updated));
-      return updated;
-    });
-
-    setName("");
-    setCommentText("");
-    setSuccessMsg("¡Muchas gracias! Tu mensaje ha sido publicado.");
-
-    // Try posting to backend API in background
     try {
-      const res = await fetch("/api/guestbook", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: trimmedName, comment: trimmedComment }),
+      await addDoc(collection(db, "guestbook"), {
+        name: trimmedName,
+        comment: trimmedComment,
+        date: new Date().toISOString().split("T")[0],
+        createdAt: serverTimestamp()
       });
 
-      if (res.ok) {
-        const serverEntry = await res.json();
-        if (serverEntry && serverEntry.id) {
-          setComments((prev) => {
-            const updated = [serverEntry, ...prev.filter(c => c.id !== localEntry.id && c.id !== serverEntry.id)];
-            localStorage.setItem("ytzel_quince_guestbook", JSON.stringify(updated));
-            return updated;
-          });
-        }
-      }
+      setName("");
+      setCommentText("");
+      setSuccessMsg("¡Muchas gracias! Tu mensaje ha sido publicado en el libro.");
     } catch (err) {
-      // Backend not reached, message is already safely displayed and stored
+      console.error("Error guardando mensaje en Firebase:", err);
+      setError("Ocurrió un inconveniente al guardar tu mensaje. Inténtalo de nuevo.");
     } finally {
       setSubmitting(false);
       setTimeout(() => setSuccessMsg(""), 4000);
