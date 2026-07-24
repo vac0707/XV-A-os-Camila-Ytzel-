@@ -12,24 +12,37 @@ export const Guestbook = () => {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
 
+  const fetchComments = async () => {
+    try {
+      const res = await fetch("/api/guestbook");
+      if (res.ok) {
+        const data = await res.json();
+        setComments(data);
+        localStorage.setItem("ytzel_quince_guestbook", JSON.stringify(data));
+      }
+    } catch (e) {
+      console.error("Error fetching guestbook:", e);
+    }
+  };
+
   useEffect(() => {
     const saved = localStorage.getItem("ytzel_quince_guestbook");
     if (saved) {
       try {
         const parsed: GuestComment[] = JSON.parse(saved);
-        // Filter out legacy example entries if present
         const cleaned = parsed.filter(c => c.id !== "1" && c.id !== "2");
         setComments(cleaned);
-        localStorage.setItem("ytzel_quince_guestbook", JSON.stringify(cleaned));
       } catch (e) {
         setComments([]);
       }
-    } else {
-      setComments([]);
     }
+    fetchComments();
+
+    const interval = setInterval(fetchComments, 5000);
+    return () => clearInterval(interval);
   }, []);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
 
@@ -44,20 +57,27 @@ export const Guestbook = () => {
 
     setSubmitting(true);
 
-    const newComment: GuestComment = {
-      id: Date.now().toString(),
-      name: name.trim(),
-      comment: commentText.trim(),
-      date: new Date().toISOString().split('T')[0]
-    };
+    try {
+      const res = await fetch("/api/guestbook", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: name.trim(), comment: commentText.trim() }),
+      });
 
-    const updated = [newComment, ...comments];
-    setComments(updated);
-    localStorage.setItem("ytzel_quince_guestbook", JSON.stringify(updated));
-
-    setName("");
-    setCommentText("");
-    setSubmitting(false);
+      if (res.ok) {
+        const newComment = await res.json();
+        setComments((prev) => [newComment, ...prev.filter(c => c.id !== newComment.id)]);
+        setName("");
+        setCommentText("");
+      } else {
+        const errData = await res.json().catch(() => ({}));
+        setError(errData.error || "Error al enviar el mensaje.");
+      }
+    } catch (err) {
+      setError("Error de conexión. Inténtalo de nuevo.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const downloadCSV = () => {
