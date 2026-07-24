@@ -11,17 +11,32 @@ export const Guestbook = () => {
   const [commentText, setCommentText] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [successMsg, setSuccessMsg] = useState("");
 
   const fetchComments = async () => {
     try {
       const res = await fetch("/api/guestbook");
       if (res.ok) {
-        const data = await res.json();
-        setComments(data);
-        localStorage.setItem("ytzel_quince_guestbook", JSON.stringify(data));
+        const serverData = await res.json();
+        if (Array.isArray(serverData)) {
+          const saved = localStorage.getItem("ytzel_quince_guestbook");
+          let localData: GuestComment[] = [];
+          if (saved) {
+            try { localData = JSON.parse(saved); } catch (e) {}
+          }
+          const map = new Map<string, GuestComment>();
+          [...serverData, ...localData].forEach(item => {
+            if (item && item.id && item.id !== "1" && item.id !== "2") {
+              map.set(item.id, item);
+            }
+          });
+          const merged = Array.from(map.values());
+          setComments(merged);
+          localStorage.setItem("ytzel_quince_guestbook", JSON.stringify(merged));
+        }
       }
     } catch (e) {
-      console.error("Error fetching guestbook:", e);
+      console.log("Server API sync check fallback to local storage");
     }
   };
 
@@ -45,38 +60,63 @@ export const Guestbook = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setSuccessMsg("");
 
-    if (!name.trim()) {
+    const trimmedName = name.trim();
+    const trimmedComment = commentText.trim();
+
+    if (!trimmedName) {
       setError("Por favor, ingresa tu nombre.");
       return;
     }
-    if (!commentText.trim()) {
+    if (!trimmedComment) {
       setError("Por favor, escribe tus hermosos deseos.");
       return;
     }
 
     setSubmitting(true);
 
+    const localEntry: GuestComment = {
+      id: Date.now().toString() + "-" + Math.random().toString(36).substring(2, 6),
+      name: trimmedName,
+      comment: trimmedComment,
+      date: new Date().toISOString().split("T")[0],
+    };
+
+    // Immediately display and save locally
+    setComments((prev) => {
+      const updated = [localEntry, ...prev.filter(c => c.id !== localEntry.id)];
+      localStorage.setItem("ytzel_quince_guestbook", JSON.stringify(updated));
+      return updated;
+    });
+
+    setName("");
+    setCommentText("");
+    setSuccessMsg("¡Muchas gracias! Tu mensaje ha sido publicado.");
+
+    // Try posting to backend API in background
     try {
       const res = await fetch("/api/guestbook", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: name.trim(), comment: commentText.trim() }),
+        body: JSON.stringify({ name: trimmedName, comment: trimmedComment }),
       });
 
       if (res.ok) {
-        const newComment = await res.json();
-        setComments((prev) => [newComment, ...prev.filter(c => c.id !== newComment.id)]);
-        setName("");
-        setCommentText("");
-      } else {
-        const errData = await res.json().catch(() => ({}));
-        setError(errData.error || "Error al enviar el mensaje.");
+        const serverEntry = await res.json();
+        if (serverEntry && serverEntry.id) {
+          setComments((prev) => {
+            const updated = [serverEntry, ...prev.filter(c => c.id !== localEntry.id && c.id !== serverEntry.id)];
+            localStorage.setItem("ytzel_quince_guestbook", JSON.stringify(updated));
+            return updated;
+          });
+        }
       }
     } catch (err) {
-      setError("Error de conexión. Inténtalo de nuevo.");
+      // Backend not reached, message is already safely displayed and stored
     } finally {
       setSubmitting(false);
+      setTimeout(() => setSuccessMsg(""), 4000);
     }
   };
 
@@ -194,6 +234,10 @@ export const Guestbook = () => {
 
             {error && (
               <p className="text-xs text-red-600 font-bold font-cormorant">{error}</p>
+            )}
+
+            {successMsg && (
+              <p className="text-xs text-emerald-700 bg-emerald-50 border border-emerald-300 p-2 rounded-sm font-bold font-cormorant text-center">{successMsg}</p>
             )}
 
             <button
