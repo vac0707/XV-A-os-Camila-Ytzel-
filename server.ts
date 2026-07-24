@@ -14,57 +14,88 @@ async function startServer() {
   const app = express();
   const PORT = 3000;
 
+  // Middlewares to parse JSON and URL-encoded request bodies
   app.use(express.json());
+  app.use(express.urlencoded({ extended: true }));
 
-  const DATA_FILE = path.join(process.cwd(), "guestbook_data.json");
+  // Primary and fallback storage file paths
+  const STORAGE_PATHS = [
+    path.join(process.cwd(), "guestbook_data.json"),
+    "/tmp/guestbook_data.json",
+  ];
 
-  // Helper function to read guestbook comments safely from JSON file
-  function readComments(): GuestComment[] {
-    try {
-      if (fs.existsSync(DATA_FILE)) {
-        const raw = fs.readFileSync(DATA_FILE, "utf-8");
-        return JSON.parse(raw);
+  // In-memory array for instant, error-free responses across requests
+  let commentsInMemory: GuestComment[] = [];
+
+  // Helper to load comments on server start
+  function loadInitialComments() {
+    for (const p of STORAGE_PATHS) {
+      try {
+        if (fs.existsSync(p)) {
+          const raw = fs.readFileSync(p, "utf-8");
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed)) {
+            commentsInMemory = parsed;
+            console.log(`Loaded ${parsed.length} comments from ${p}`);
+            return;
+          }
+        }
+      } catch (err) {
+        console.error(`Error reading guestbook file from ${p}:`, err);
       }
-    } catch (err) {
-      console.error("Error reading guestbook_data.json:", err);
     }
-    return [];
+    console.log("No existing guestbook file found. Initialized empty guestbook.");
   }
 
-  // Helper function to save guestbook comments to JSON file
+  loadInitialComments();
+
+  // Helper function to save guestbook comments to disk
   function saveComments(comments: GuestComment[]) {
-    try {
-      fs.writeFileSync(DATA_FILE, JSON.stringify(comments, null, 2), "utf-8");
-    } catch (err) {
-      console.error("Error writing guestbook_data.json:", err);
+    for (const p of STORAGE_PATHS) {
+      try {
+        fs.writeFileSync(p, JSON.stringify(comments, null, 2), "utf-8");
+      } catch (err) {
+        console.error(`Could not write guestbook file to ${p}:`, err);
+      }
     }
   }
 
   // GET /api/guestbook - Fetch all guestbook comments
   app.get("/api/guestbook", (_req, res) => {
-    const comments = readComments();
-    res.json(comments);
+    try {
+      return res.json(commentsInMemory);
+    } catch (err) {
+      console.error("Error in GET /api/guestbook:", err);
+      return res.status(500).json({ error: "Error al obtener los comentarios." });
+    }
   });
 
   // POST /api/guestbook - Add a new comment
   app.post("/api/guestbook", (req, res) => {
-    const { name, comment } = req.body;
-    if (!name || !comment || !name.trim() || !comment.trim()) {
-      return res.status(400).json({ error: "Nombre y mensaje son obligatorios." });
+    try {
+      const body = req.body || {};
+      const name = typeof body.name === "string" ? body.name.trim() : "";
+      const comment = typeof body.comment === "string" ? body.comment.trim() : "";
+
+      if (!name || !comment) {
+        return res.status(400).json({ error: "Nombre y mensaje son obligatorios." });
+      }
+
+      const newEntry: GuestComment = {
+        id: Date.now().toString() + "-" + Math.random().toString(36).substring(2, 6),
+        name: name.slice(0, 50),
+        comment: comment.slice(0, 200),
+        date: new Date().toISOString().split("T")[0],
+      };
+
+      commentsInMemory.unshift(newEntry);
+      saveComments(commentsInMemory);
+
+      return res.status(201).json(newEntry);
+    } catch (err) {
+      console.error("Error in POST /api/guestbook:", err);
+      return res.status(500).json({ error: "Error al guardar el mensaje en el servidor." });
     }
-
-    const comments = readComments();
-    const newEntry: GuestComment = {
-      id: Date.now().toString() + "-" + Math.random().toString(36).substring(2, 6),
-      name: name.trim().slice(0, 50),
-      comment: comment.trim().slice(0, 200),
-      date: new Date().toISOString().split("T")[0],
-    };
-
-    comments.unshift(newEntry);
-    saveComments(comments);
-
-    return res.status(201).json(newEntry);
   });
 
   // Vite middleware for development vs production static file serving
